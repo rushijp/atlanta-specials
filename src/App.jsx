@@ -706,6 +706,7 @@ function AdminView({ state }) {
   const [editingId, setEditingId] = useState(null);
   const [showLinks, setShowLinks] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
 
   const upcoming = state.groups.filter(
     (g) => g.id !== state.currentId && !state.completedIds.includes(g.id)
@@ -785,8 +786,8 @@ function AdminView({ state }) {
   };
 
   const resetQueue = async () => {
-    if (!confirm('Reset the entire queue? All groups move back to upcoming.')) return;
     await save({ ...state, currentId: null, completedIds: [] });
+    setConfirmReset(false);
   };
 
   const moveGroup = async (id, dir) => {
@@ -962,9 +963,7 @@ function AdminView({ state }) {
                     await editGroup(g.id, name, members);
                     setEditingId(null);
                   }}
-                  onDelete={() => {
-                    if (confirm(`Delete "${g.name}"?`)) deleteGroup(g.id);
-                  }}
+                  onDelete={() => deleteGroup(g.id)}
                   onStart={() => startGroup(g.id)}
                   canMoveUp={state.groups.indexOf(g) > 0}
                   canMoveDown={state.groups.indexOf(g) < state.groups.length - 1}
@@ -1002,13 +1001,31 @@ function AdminView({ state }) {
                 </div>
               ))}
             </div>
-            <button
-              onClick={resetQueue}
-              className="mt-4 flex items-center gap-1.5 text-xs text-stone-400 hover:text-stone-700"
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              <RotateCcw className="w-3.5 h-3.5" /> Reset entire queue
-            </button>
+            {confirmReset ? (
+              <div className="mt-4 flex items-center gap-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                <span className="text-xs text-stone-600">Reset everything?</span>
+                <button
+                  onClick={resetQueue}
+                  className="text-xs px-2.5 py-1 bg-rose-600 text-white rounded-lg hover:bg-rose-700"
+                >
+                  Yes, reset
+                </button>
+                <button
+                  onClick={() => setConfirmReset(false)}
+                  className="text-xs px-2.5 py-1 border border-stone-300 rounded-lg text-stone-500 hover:text-stone-800"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmReset(true)}
+                className="mt-4 flex items-center gap-1.5 text-xs text-stone-400 hover:text-stone-700"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> Reset entire queue
+              </button>
+            )}
           </section>
         )}
       </div>
