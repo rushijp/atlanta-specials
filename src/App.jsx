@@ -128,7 +128,7 @@ function LoadingScreen() {
   return (
     <PageFrame>
       <div className="flex items-center justify-center min-h-screen">
-        <Heart className="w-7 h-7 animate-pulse text-rose-600" />
+        <img src="/BR_Monogram Only_Black.png" alt="B&R" className="w-16 h-16 object-contain animate-pulse opacity-40" />
       </div>
     </PageFrame>
   );
@@ -151,51 +151,38 @@ function PublicView({ state, connected }) {
   const remaining = upcoming.length - afterOnDeck.length - 1;
   const allDone = completedCount > 0 && !current && upcoming.length === 0;
 
-  // Search result: find which group contains the searched name
+  // Search: find ALL groups containing the searched name
   const q = search.trim().toLowerCase();
-  const searchResult = q.length >= 2 ? (() => {
-    // Check current group
-    if (current) {
-      const inName = current.name.toLowerCase().includes(q);
-      const inMembers = current.members.some((m) => m.toLowerCase().includes(q));
-      if (inName || inMembers) return { group: current, status: 'current', position: null };
-    }
-    // Check upcoming
-    for (let i = 0; i < upcoming.length; i++) {
-      const g = upcoming[i];
-      const inName = g.name.toLowerCase().includes(q);
-      const inMembers = g.members.some((m) => m.toLowerCase().includes(q));
-      if (inName || inMembers) {
-        const status = i === 0 ? 'ondeck' : 'upcoming';
-        return { group: g, status, position: i + 1 };
-      }
-    }
-    // Check completed
-    const done = state.groups.find(
-      (g) =>
-        state.completedIds.includes(g.id) &&
-        (g.name.toLowerCase().includes(q) ||
-          g.members.some((m) => m.toLowerCase().includes(q)))
-    );
-    if (done) return { group: done, status: 'done', position: null };
-    return null;
-  })() : null;
+  const searchResults = q.length >= 2 ? state.groups
+    .filter((g) =>
+      g.name.toLowerCase().includes(q) ||
+      g.members.some((m) => m.toLowerCase().includes(q))
+    )
+    .map((g) => {
+      if (g.id === state.currentId) return { group: g, status: 'current', position: null };
+      if (state.completedIds.includes(g.id)) return { group: g, status: 'done', position: null };
+      const idx = upcoming.findIndex((u) => u.id === g.id);
+      return { group: g, status: idx === 0 ? 'ondeck' : 'upcoming', position: idx + 1 };
+    }) : [];
 
   return (
     <PageFrame>
       {/* Sticky header */}
-      <header className="sticky top-0 z-10 bg-[#f5efe6]/95 backdrop-blur-sm border-b border-stone-200 px-5 py-4">
+      <header className="sticky top-0 z-10 bg-[#f5efe6]/95 backdrop-blur-sm border-b border-stone-200 px-5 py-3">
         <div className="flex items-center justify-between max-w-lg mx-auto">
-          <div>
-            <p
-              className="text-[10px] uppercase tracking-[0.3em] text-stone-400"
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              Photo Queue
-            </p>
-            <h1 className="text-xl font-medium italic leading-tight">
-              {state.coupleNames || 'Wedding Photos'}
-            </h1>
+          <div className="flex items-center gap-3">
+            <img src="/BR_Monogram Only_Black.png" alt="B&R" className="w-9 h-9 object-contain opacity-85" />
+            <div>
+              <p
+                className="text-[10px] uppercase tracking-[0.3em] text-stone-400"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                Photo Queue
+              </p>
+              <h1 className="text-lg font-medium italic leading-tight">
+                {state.coupleNames || 'Wedding Photos'}
+              </h1>
+            </div>
           </div>
           <div className="flex items-center gap-1.5">
             <Wifi
@@ -234,49 +221,67 @@ function PublicView({ state, connected }) {
           )}
         </div>
 
-        {/* ── SEARCH RESULT ── */}
+        {/* ── SEARCH RESULTS ── */}
         {q.length >= 2 && (
           <section className="mb-6">
-            {searchResult ? (
-              <div
-                className={`rounded-2xl px-5 py-5 border ${
-                  searchResult.status === 'current'
-                    ? 'bg-stone-900 text-stone-50 border-stone-900'
-                    : searchResult.status === 'ondeck'
-                    ? 'bg-amber-50 border-amber-300'
-                    : searchResult.status === 'done'
-                    ? 'bg-stone-100 border-stone-200'
-                    : 'bg-white border-stone-200'
-                }`}
-              >
-                <p
-                  className={`text-[10px] uppercase tracking-[0.3em] mb-2 ${
-                    searchResult.status === 'current'
-                      ? 'text-stone-400'
-                      : searchResult.status === 'done'
-                      ? 'text-stone-400'
-                      : 'text-stone-500'
-                  }`}
-                  style={{ fontFamily: 'Inter, sans-serif' }}
-                >
-                  {searchResult.status === 'current' && '📸 Now on Stage'}
-                  {searchResult.status === 'ondeck' && '⏳ You\'re next!'}
-                  {searchResult.status === 'upcoming' && `⏱ Position #${searchResult.position} in queue`}
-                  {searchResult.status === 'done' && '✓ Already photographed'}
-                </p>
-                <p className={`text-2xl italic font-medium ${searchResult.status === 'current' ? 'text-stone-50' : 'text-stone-800'}`}>
-                  {searchResult.group.name}
-                </p>
-                {searchResult.group.members.length > 0 && (
-                  <p
-                    className={`text-sm mt-1 leading-relaxed ${
-                      searchResult.status === 'current' ? 'text-stone-300' : 'text-stone-500'
-                    }`}
-                    style={{ fontFamily: 'Inter, sans-serif' }}
-                  >
-                    {searchResult.group.members.join(' · ')}
+            {searchResults.length > 0 ? (
+              <div className="space-y-2">
+                {searchResults.length > 1 && (
+                  <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400 mb-1 px-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    {searchResults.length} groups found
                   </p>
                 )}
+                {searchResults.map(({ group, status, position }) => (
+                  <div
+                    key={group.id}
+                    className={`rounded-2xl px-5 py-4 border ${
+                      status === 'current'
+                        ? 'bg-stone-900 text-stone-50 border-stone-900'
+                        : status === 'ondeck'
+                        ? 'bg-amber-50 border-amber-300'
+                        : status === 'done'
+                        ? 'bg-stone-100 border-stone-200'
+                        : 'bg-white border-stone-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <p
+                        className={`text-[10px] uppercase tracking-[0.3em] ${
+                          status === 'current' ? 'text-stone-400' : 'text-stone-500'
+                        }`}
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        {status === 'current' && '📸 Now on Stage'}
+                        {status === 'ondeck' && "⏳ You're next!"}
+                        {status === 'upcoming' && `⏱ Position #${position} in queue`}
+                        {status === 'done' && '✓ Already photographed'}
+                      </p>
+                      {group.side && (
+                        <span
+                          className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                            group.side === 'Shah' ? 'bg-rose-100 text-rose-700' :
+                            group.side === 'Patel' ? 'bg-blue-100 text-blue-700' :
+                            'bg-purple-100 text-purple-700'
+                          }`}
+                          style={{ fontFamily: 'Inter, sans-serif' }}
+                        >
+                          {group.side}
+                        </span>
+                      )}
+                    </div>
+                    <p className={`text-xl italic font-medium ${status === 'current' ? 'text-stone-50' : 'text-stone-800'}`}>
+                      {group.name}
+                    </p>
+                    {group.members.length > 0 && (
+                      <p
+                        className={`text-sm mt-1 leading-relaxed ${status === 'current' ? 'text-stone-300' : 'text-stone-500'}`}
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        {group.members.join(' · ')}
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="rounded-2xl border border-stone-200 px-5 py-5 text-center bg-white/60">
@@ -482,14 +487,28 @@ function PublicView({ state, connected }) {
                       >
                         {isCurrent ? '📸 Now' : isOnDeck ? '⏳ Next' : isDone ? '✓ Done' : `#${upcomingIndex + 1}`}
                       </span>
-                      <div className="min-w-0">
-                        <p
-                          className={`text-base italic font-medium leading-tight ${
-                            isDone && !isCurrent ? 'line-through text-stone-400' : ''
-                          }`}
-                        >
-                          {g.name}
-                        </p>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <p
+                            className={`text-base italic font-medium leading-tight ${
+                              isDone && !isCurrent ? 'line-through text-stone-400' : ''
+                            }`}
+                          >
+                            {g.name}
+                          </p>
+                          {g.side && (
+                            <span
+                              className={`text-[10px] px-1.5 py-0.5 rounded-md flex-shrink-0 ${
+                                g.side === 'Shah' ? 'bg-rose-100 text-rose-700' :
+                                g.side === 'Patel' ? 'bg-blue-100 text-blue-700' :
+                                'bg-purple-100 text-purple-700'
+                              } ${isCurrent ? 'opacity-60' : ''}`}
+                              style={{ fontFamily: 'Inter, sans-serif' }}
+                            >
+                              {g.side}
+                            </span>
+                          )}
+                        </div>
                         {g.members.length > 0 && (
                           <p
                             className={`text-xs mt-0.5 leading-relaxed ${
@@ -527,6 +546,12 @@ function DisplayView({ state }) {
     <PageFrame dark>
       <div className="min-h-screen flex flex-col p-10 sm:p-16">
         <header className="text-center mb-10">
+          <img
+            src="/BR_Monogram Only_Black.png"
+            alt="B&R"
+            className="w-16 h-16 object-contain mx-auto mb-4"
+            style={{ filter: 'invert(1)', opacity: 0.75 }}
+          />
           <p
             className="text-xs uppercase tracking-[0.5em] text-stone-400 mb-3"
             style={{ fontFamily: 'Inter, sans-serif' }}
@@ -655,7 +680,7 @@ function AdminPasswordScreen({ onUnlock }) {
     <PageFrame>
       <div className="flex items-center justify-center min-h-screen p-5">
         <div className="max-w-xs w-full bg-white/90 border border-stone-200 rounded-2xl p-8 text-center">
-          <Heart className="w-7 h-7 text-rose-600 mx-auto mb-5" />
+          <img src="/BR_Monogram Only_Black.png" alt="B&R" className="w-16 h-16 object-contain mx-auto mb-5 opacity-85" />
           <h1 className="text-2xl italic font-medium mb-1">Admin Access</h1>
           <p
             className="text-stone-400 text-sm mb-6"
@@ -807,16 +832,19 @@ function AdminView({ state }) {
         {/* Header */}
         <header className="mb-8">
           <div className="flex items-start justify-between gap-3 flex-wrap">
-            <div>
-              <p
-                className="text-[10px] uppercase tracking-[0.3em] text-stone-500 mb-1"
-                style={{ fontFamily: 'Inter, sans-serif' }}
-              >
-                Admin · Photo Queue
-              </p>
-              <h1 className="text-3xl sm:text-4xl font-medium italic">
-                {state.coupleNames || 'Our Wedding'}
-              </h1>
+            <div className="flex items-center gap-3">
+              <img src="/BR_Monogram Only_Black.png" alt="B&R" className="w-10 h-10 object-contain opacity-80 flex-shrink-0" />
+              <div>
+                <p
+                  className="text-[10px] uppercase tracking-[0.3em] text-stone-500 mb-1"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  Admin · Photo Queue
+                </p>
+                <h1 className="text-3xl sm:text-4xl font-medium italic">
+                  {state.coupleNames || 'Our Wedding'}
+                </h1>
+              </div>
             </div>
             <div className="flex gap-2 flex-shrink-0">
               <button
@@ -990,10 +1018,10 @@ function AdminView({ state }) {
                   </div>
                   <button
                     onClick={() => undoComplete(g.id)}
-                    className="text-xs text-stone-500 hover:text-stone-900 opacity-0 group-hover:opacity-100 transition ml-3 flex-shrink-0"
+                    className="text-xs text-stone-500 hover:text-stone-900 border border-stone-300 hover:border-stone-500 px-2 py-0.5 rounded-lg transition ml-3 flex-shrink-0"
                     style={{ fontFamily: 'Inter, sans-serif' }}
                   >
-                    Undo
+                    Restore
                   </button>
                 </div>
               ))}
@@ -1113,7 +1141,7 @@ function GroupCard({
         </button>
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-baseline gap-2 flex-wrap">
           <span
             className="text-xs text-stone-400"
             style={{ fontFamily: 'Inter, sans-serif' }}
@@ -1121,6 +1149,20 @@ function GroupCard({
             #{position}
           </span>
           <h4 className="text-lg italic font-medium truncate">{group.name}</h4>
+          {group.side && (
+            <span
+              className={`text-[10px] px-1.5 py-0.5 rounded-md flex-shrink-0 ${
+                group.side === 'Shah'
+                  ? 'bg-rose-100 text-rose-700'
+                  : group.side === 'Patel'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-purple-100 text-purple-700'
+              }`}
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              {group.side}
+            </span>
+          )}
         </div>
         {group.members.length > 0 && (
           <p
