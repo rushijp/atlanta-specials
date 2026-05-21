@@ -256,18 +256,6 @@ function PublicView({ state, connected }) {
                         {status === 'upcoming' && `⏱ Position #${position} in queue`}
                         {status === 'done' && '✓ Already photographed'}
                       </p>
-                      {group.side && (
-                        <span
-                          className={`text-[10px] px-1.5 py-0.5 rounded-md ${
-                            group.side === 'Shah' ? 'bg-rose-100 text-rose-700' :
-                            group.side === 'Patel' ? 'bg-blue-100 text-blue-700' :
-                            'bg-purple-100 text-purple-700'
-                          }`}
-                          style={{ fontFamily: 'Inter, sans-serif' }}
-                        >
-                          {group.side}
-                        </span>
-                      )}
                     </div>
                     <p className={`text-xl italic font-medium ${status === 'current' ? 'text-stone-50' : 'text-stone-800'}`}>
                       {group.name}
@@ -460,7 +448,7 @@ function PublicView({ state, connected }) {
 
             {showAll && (
               <div className="mt-2 space-y-1">
-                {state.groups.map((g, i) => {
+                {state.groups.map((g) => {
                   const isDone = state.completedIds.includes(g.id);
                   const isCurrent = g.id === state.currentId;
                   const upcomingIndex = upcoming.findIndex((u) => u.id === g.id);
@@ -496,18 +484,6 @@ function PublicView({ state, connected }) {
                           >
                             {g.name}
                           </p>
-                          {g.side && (
-                            <span
-                              className={`text-[10px] px-1.5 py-0.5 rounded-md flex-shrink-0 ${
-                                g.side === 'Shah' ? 'bg-rose-100 text-rose-700' :
-                                g.side === 'Patel' ? 'bg-blue-100 text-blue-700' :
-                                'bg-purple-100 text-purple-700'
-                              } ${isCurrent ? 'opacity-60' : ''}`}
-                              style={{ fontFamily: 'Inter, sans-serif' }}
-                            >
-                              {g.side}
-                            </span>
-                          )}
                         </div>
                         {g.members.length > 0 && (
                           <p
@@ -1149,20 +1125,6 @@ function GroupCard({
             #{position}
           </span>
           <h4 className="text-lg italic font-medium truncate">{group.name}</h4>
-          {group.side && (
-            <span
-              className={`text-[10px] px-1.5 py-0.5 rounded-md flex-shrink-0 ${
-                group.side === 'Shah'
-                  ? 'bg-rose-100 text-rose-700'
-                  : group.side === 'Patel'
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'bg-purple-100 text-purple-700'
-              }`}
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              {group.side}
-            </span>
-          )}
         </div>
         {group.members.length > 0 && (
           <p
