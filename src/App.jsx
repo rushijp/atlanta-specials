@@ -46,16 +46,18 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 
 // ─── Bets questions ────────────────────────────────────────────────────────
 const BETS_QUESTIONS = [
-  { id: 'q1', text: "What color will Brijal's dress be?",              options: ['Red', 'Pink', 'Cream'] },
-  { id: 'q2', text: 'What will the late night snack be?',              options: ['Pizza', 'Taco Bell', 'Something local', 'Waffle House'] },
-  { id: 'q3', text: 'Will the first dance be choreographed?',          options: ['Yes', 'No'] },
-  { id: 'q4', text: "How long will Rushi's Parents' speech be?",       options: ['Over 4 mins', 'Under 4 mins'] },
-  { id: 'q5', text: "How long will Brijal's Parents' speech be?",      options: ['Over 5 mins', 'Under 5 mins'] },
-  { id: 'q6', text: 'How long will the first dance be?',               options: ['Over 100 seconds', 'Under 100 seconds'] },
-  { id: 'q7', text: 'Will a flower boy go rogue during the entrance?', options: ['Yes', 'No'] },
-  { id: 'q8', text: 'Notable dance floor injuries?',                   options: ['Over 1.5', 'Under 1.5'] },
-  { id: 'q9', text: 'Will anyone cry during the speeches?',            options: ['Yes', 'No'] },
-  { id: 'q10', text: 'What will the baraat car be?',                   options: ['Audi R8', 'Rolls Royce', 'Lamborghini', 'Corvette'] },
+  // ── Wedding ──
+  { id: 'q10', section: 'Wedding',   text: 'What will the baraat car be?',                   options: ['Audi R8', 'Rolls Royce', 'Lamborghini', 'Corvette'] },
+  { id: 'q1',  section: 'Wedding',   text: "What color will Brijal's dress be?",              options: ['Red', 'Pink', 'Cream'] },
+  { id: 'q7',  section: 'Wedding',   text: 'Will a flower boy go rogue during the entrance?', options: ['Yes', 'No'] },
+  // ── Reception ──
+  { id: 'q3',  section: 'Reception', text: 'Will the first dance be choreographed?',          options: ['Yes', 'No'] },
+  { id: 'q6',  section: 'Reception', text: 'How long will the first dance be?',               options: ['Over 100 seconds', 'Under 100 seconds'] },
+  { id: 'q4',  section: 'Reception', text: "How long will Rushi's Parents' speech be?",       options: ['Over 4 mins', 'Under 4 mins'] },
+  { id: 'q5',  section: 'Reception', text: "How long will Brijal's Parents' speech be?",      options: ['Over 5 mins', 'Under 5 mins'] },
+  { id: 'q9',  section: 'Reception', text: 'Will anyone cry during the speeches?',            options: ['Yes', 'No'] },
+  { id: 'q8',  section: 'Reception', text: 'Notable dance floor injuries?',                   options: ['Over 1.5', 'Under 1.5'] },
+  { id: 'q2',  section: 'Reception', text: 'What will the late night snack be?',              options: ['Pizza', 'Taco Bell', 'Something local', 'Waffle House'] },
 ];
 
 const BAD_WORDS = [
@@ -716,24 +718,29 @@ function BetsView() {
               Voting as <span className="font-medium text-stone-800">{name.trim()}</span> · {Object.keys(picks).length}/{BETS_QUESTIONS.length} answered
             </p>
             <div className="space-y-4">
-              {BETS_QUESTIONS.map((q) => (
-                <div key={q.id} className="bg-white/70 border border-stone-200 rounded-2xl px-5 py-4">
-                  <p className="text-lg italic font-medium mb-3">{q.text}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {q.options.map((opt) => (
-                      <button
-                        key={opt}
-                        onClick={() => setPicks((p) => ({ ...p, [q.id]: opt }))}
-                        className={`px-4 py-2 rounded-xl text-sm transition border ${
-                          picks[q.id] === opt
-                            ? 'bg-stone-900 text-stone-50 border-stone-900'
-                            : 'bg-white border-stone-200 text-stone-700 hover:border-stone-400'
-                        }`}
-                        style={{ fontFamily: 'Inter, sans-serif' }}
-                      >
-                        {opt}
-                      </button>
-                    ))}
+              {BETS_QUESTIONS.map((q, i) => (
+                <div key={q.id}>
+                  {(i === 0 || BETS_QUESTIONS[i - 1].section !== q.section) && (
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400 pt-2 pb-1" style={{ fontFamily: 'Inter, sans-serif' }}>{q.section}</p>
+                  )}
+                  <div className="bg-white/70 border border-stone-200 rounded-2xl px-5 py-4">
+                    <p className="text-lg italic font-medium mb-3">{q.text}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {q.options.map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => setPicks((p) => ({ ...p, [q.id]: opt }))}
+                          className={`px-4 py-2 rounded-xl text-sm transition border ${
+                            picks[q.id] === opt
+                              ? 'bg-stone-900 text-stone-50 border-stone-900'
+                              : 'bg-white border-stone-200 text-stone-700 hover:border-stone-400'
+                          }`}
+                          style={{ fontFamily: 'Inter, sans-serif' }}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -773,19 +780,24 @@ function BetsView() {
               </div>
             )}
             <div className="space-y-3 mb-6">
-              {BETS_QUESTIONS.map((q) => {
+              {BETS_QUESTIONS.map((q, i) => {
                 const correct = bets.correctAnswers[q.id];
                 const myPick = picks[q.id];
                 const isRight = correct && myPick === correct;
                 const isWrong = correct && myPick !== correct;
                 return (
-                  <div key={q.id} className={`rounded-xl px-4 py-3 border ${isRight ? 'bg-emerald-50 border-emerald-200' : isWrong ? 'bg-rose-50 border-rose-200' : 'bg-white/70 border-stone-200'}`}>
-                    <p className="text-xs text-stone-500 mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>{q.text}</p>
-                    <div className="flex items-center justify-between gap-2">
-                      <p className={`text-base italic font-medium ${isRight ? 'text-emerald-800' : isWrong ? 'text-rose-700 line-through' : 'text-stone-800'}`}>{myPick}</p>
-                      {isRight && <span className="text-emerald-600 text-lg">✓</span>}
-                      {isWrong && <span className="text-xs text-stone-500" style={{ fontFamily: 'Inter, sans-serif' }}>→ {correct}</span>}
-                      {!correct && <span className="text-[10px] text-stone-300 uppercase tracking-wider" style={{ fontFamily: 'Inter, sans-serif' }}>Pending</span>}
+                  <div key={q.id}>
+                    {(i === 0 || BETS_QUESTIONS[i - 1].section !== q.section) && (
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400 pt-2 pb-1" style={{ fontFamily: 'Inter, sans-serif' }}>{q.section}</p>
+                    )}
+                    <div className={`rounded-xl px-4 py-3 border ${isRight ? 'bg-emerald-50 border-emerald-200' : isWrong ? 'bg-rose-50 border-rose-200' : 'bg-white/70 border-stone-200'}`}>
+                      <p className="text-xs text-stone-500 mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>{q.text}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className={`text-base italic font-medium ${isRight ? 'text-emerald-800' : isWrong ? 'text-rose-700 line-through' : 'text-stone-800'}`}>{myPick}</p>
+                        {isRight && <span className="text-emerald-600 text-lg">✓</span>}
+                        {isWrong && <span className="text-xs text-stone-500" style={{ fontFamily: 'Inter, sans-serif' }}>→ {correct}</span>}
+                        {!correct && <span className="text-[10px] text-stone-300 uppercase tracking-wider" style={{ fontFamily: 'Inter, sans-serif' }}>Pending</span>}
+                      </div>
                     </div>
                   </div>
                 );
@@ -894,33 +906,38 @@ function LeaderboardView() {
               <section>
                 <p className="text-[10px] uppercase tracking-[0.3em] text-stone-500 mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>Results</p>
                 <div className="space-y-3">
-                  {answeredQs.map((q) => {
+                  {answeredQs.map((q, i) => {
                     const total = voters.length || 1;
                     return (
-                      <div key={q.id} className="bg-white/70 border border-stone-200 rounded-xl px-4 py-4">
-                        <p className="text-base italic font-medium mb-3">{q.text}</p>
-                        <div className="space-y-2">
-                          {q.options.map((opt) => {
-                            const count = voters.filter((v) => v.picks[q.id] === opt).length;
-                            const pct = Math.round((count / total) * 100);
-                            const isCorrect = opt === bets.correctAnswers[q.id];
-                            return (
-                              <div key={opt}>
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className={`text-sm flex items-center gap-1.5 ${isCorrect ? 'font-medium text-emerald-700' : 'text-stone-600'}`} style={{ fontFamily: 'Inter, sans-serif' }}>
-                                    {isCorrect && '✓ '}{opt}
-                                  </span>
-                                  <span className="text-xs text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>{count} · {pct}%</span>
+                      <div key={q.id}>
+                        {(i === 0 || answeredQs[i - 1].section !== q.section) && (
+                          <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400 pt-2 pb-1" style={{ fontFamily: 'Inter, sans-serif' }}>{q.section}</p>
+                        )}
+                        <div className="bg-white/70 border border-stone-200 rounded-xl px-4 py-4">
+                          <p className="text-base italic font-medium mb-3">{q.text}</p>
+                          <div className="space-y-2">
+                            {q.options.map((opt) => {
+                              const count = voters.filter((v) => v.picks[q.id] === opt).length;
+                              const pct = Math.round((count / total) * 100);
+                              const isCorrect = opt === bets.correctAnswers[q.id];
+                              return (
+                                <div key={opt}>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className={`text-sm flex items-center gap-1.5 ${isCorrect ? 'font-medium text-emerald-700' : 'text-stone-600'}`} style={{ fontFamily: 'Inter, sans-serif' }}>
+                                      {isCorrect && '✓ '}{opt}
+                                    </span>
+                                    <span className="text-xs text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>{count} · {pct}%</span>
+                                  </div>
+                                  <div className="h-1.5 rounded-full bg-stone-100 overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full ${isCorrect ? 'bg-emerald-500' : 'bg-stone-300'}`}
+                                      style={{ width: `${pct}%` }}
+                                    />
+                                  </div>
                                 </div>
-                                <div className="h-1.5 rounded-full bg-stone-100 overflow-hidden">
-                                  <div
-                                    className={`h-full rounded-full ${isCorrect ? 'bg-emerald-500' : 'bg-stone-300'}`}
-                                    style={{ width: `${pct}%` }}
-                                  />
-                                </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
                     );
@@ -1607,45 +1624,50 @@ function AdminBetsPanel() {
 
       {/* Questions */}
       <div className="space-y-4">
-        {BETS_QUESTIONS.map((q) => {
+        {BETS_QUESTIONS.map((q, i) => {
           const correct = bets.correctAnswers[q.id];
           return (
-            <div key={q.id} className="bg-white/70 border border-stone-200 rounded-xl px-4 py-4">
-              <p className="text-base italic font-medium mb-3">{q.text}</p>
-              <div className="space-y-2">
-                {q.options.map((opt) => {
-                  const count = voterEntries.filter(([, v]) => v[q.id] === opt).length;
-                  const pct = totalVoters > 0 ? Math.round((count / totalVoters) * 100) : 0;
-                  const isSelected = correct === opt;
-                  return (
-                    <div key={opt}>
-                      <button
-                        onClick={() => setAnswer(q.id, opt)}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-left transition ${
-                          isSelected
-                            ? 'bg-emerald-600 border-emerald-600 text-white'
-                            : 'bg-white border-stone-200 text-stone-700 hover:border-stone-400'
-                        }`}
-                        style={{ fontFamily: 'Inter, sans-serif' }}
-                      >
-                        <span className="text-sm">{opt} {isSelected && '✓'}</span>
-                        <span className={`text-xs ${isSelected ? 'text-emerald-100' : 'text-stone-400'}`}>{count} · {pct}%</span>
-                      </button>
-                      <div className="h-1 rounded-full bg-stone-100 mt-0.5 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all ${isSelected ? 'bg-emerald-400' : 'bg-stone-300'}`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              {correct && (
-                <p className="text-[10px] text-stone-400 mt-2" style={{ fontFamily: 'Inter, sans-serif' }}>
-                  Tap the selected answer again to un-reveal it.
-                </p>
+            <div key={q.id}>
+              {(i === 0 || BETS_QUESTIONS[i - 1].section !== q.section) && (
+                <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400 pt-2 pb-1" style={{ fontFamily: 'Inter, sans-serif' }}>{q.section}</p>
               )}
+              <div className="bg-white/70 border border-stone-200 rounded-xl px-4 py-4">
+                <p className="text-base italic font-medium mb-3">{q.text}</p>
+                <div className="space-y-2">
+                  {q.options.map((opt) => {
+                    const count = voterEntries.filter(([, v]) => v[q.id] === opt).length;
+                    const pct = totalVoters > 0 ? Math.round((count / totalVoters) * 100) : 0;
+                    const isSelected = correct === opt;
+                    return (
+                      <div key={opt}>
+                        <button
+                          onClick={() => setAnswer(q.id, opt)}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-left transition ${
+                            isSelected
+                              ? 'bg-emerald-600 border-emerald-600 text-white'
+                              : 'bg-white border-stone-200 text-stone-700 hover:border-stone-400'
+                          }`}
+                          style={{ fontFamily: 'Inter, sans-serif' }}
+                        >
+                          <span className="text-sm">{opt} {isSelected && '✓'}</span>
+                          <span className={`text-xs ${isSelected ? 'text-emerald-100' : 'text-stone-400'}`}>{count} · {pct}%</span>
+                        </button>
+                        <div className="h-1 rounded-full bg-stone-100 mt-0.5 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${isSelected ? 'bg-emerald-400' : 'bg-stone-300'}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {correct && (
+                  <p className="text-[10px] text-stone-400 mt-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    Tap the selected answer again to un-reveal it.
+                  </p>
+                )}
+              </div>
             </div>
           );
         })}
