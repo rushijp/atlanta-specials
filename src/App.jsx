@@ -54,7 +54,7 @@ const BETS_QUESTIONS = [
   { id: 'q3',  section: 'Reception', text: 'Will the first dance be choreographed?',          options: ['Yes', 'No'] },
   { id: 'q6',  section: 'Reception', text: 'How long will the first dance be?',               options: ['Over 100 seconds', 'Under 100 seconds'] },
   { id: 'q4',  section: 'Reception', text: "How long will Rushi's Parents' speech be?",       options: ['Over 4 mins', 'Under 4 mins'] },
-  { id: 'q5',  section: 'Reception', text: "How long will Brijal's Parents' speech be?",      options: ['Over 5 mins', 'Under 5 mins'] },
+  { id: 'q5',  section: 'Reception', text: "How long will Brijal's Parents' speech be?",      options: ['Over 4 mins', 'Under 4 mins'] },
   { id: 'q9',  section: 'Reception', text: 'Will anyone cry during the speeches?',            options: ['Yes', 'No'] },
   { id: 'q8',  section: 'Reception', text: 'Notable dance floor injuries?',                   options: ['Over 1.5', 'Under 1.5'] },
   { id: 'q2',  section: 'Reception', text: 'What will the late night snack be?',              options: ['Pizza', 'Taco Bell', 'Something local', 'Waffle House'] },
@@ -574,10 +574,13 @@ function PublicView({ state, connected }) {
 // ═══════════════════════════════════════════════════════════════════════════
 // BETS VIEW — guest predictions
 // ═══════════════════════════════════════════════════════════════════════════
+const POINTS_PER_QUESTION = 10;
+
 function BetsView() {
   const { bets, betsLoading } = useBetsState();
   const [name, setName] = useState(() => localStorage.getItem('wq_bets_name') || '');
   const [picks, setPicks] = useState({});
+  const [savedPicks, setSavedPicks] = useState({}); // what's already in Firestore
   const [step, setStep] = useState('name'); // 'name' | 'voting' | 'done'
   const [nameError, setNameError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -596,27 +599,30 @@ function BetsView() {
       setStep('locked');
       return;
     }
-    if (bets.votes[key]) {
-      const existing = bets.votes[key];
-      const loaded = {};
-      BETS_QUESTIONS.forEach((q) => { if (existing[q.id]) loaded[q.id] = existing[q.id]; });
-      setPicks(loaded);
-      localStorage.setItem('wq_bets_name', trimmed);
-      setStep('done');
-      return;
-    }
+    // Load existing picks (if any) — always go to voting so they can add more
+    const existing = bets.votes[key] || {};
+    const loaded = {};
+    BETS_QUESTIONS.forEach((q) => { if (existing[q.id]) loaded[q.id] = existing[q.id]; });
+    setPicks(loaded);
+    setSavedPicks(loaded);
     localStorage.setItem('wq_bets_name', trimmed);
     setStep('voting');
   };
 
   const handleSubmit = async () => {
-    if (Object.keys(picks).length < BETS_QUESTIONS.length) return;
+    const newPicks = Object.fromEntries(
+      Object.entries(picks).filter(([qId]) => !savedPicks[qId])
+    );
+    if (Object.keys(newPicks).length === 0) return;
     setSubmitting(true);
     try {
       const key = normalizeName(name.trim());
+      // Merge locally: existing saved + new selections
+      const merged = { ...savedPicks, ...picks };
       await setDoc(BETS_DOC, {
-        votes: { [key]: { displayName: name.trim(), ...picks } },
+        votes: { [key]: { displayName: name.trim(), ...merged } },
       }, { merge: true });
+      setSavedPicks(merged);
       setStep('done');
     } finally {
       setSubmitting(false);
@@ -624,9 +630,11 @@ function BetsView() {
   };
 
   const answeredCount = BETS_QUESTIONS.filter((q) => bets.correctAnswers[q.id]).length;
-  const myScore = BETS_QUESTIONS.filter(
+  const myCorrect = BETS_QUESTIONS.filter(
     (q) => bets.correctAnswers[q.id] && picks[q.id] === bets.correctAnswers[q.id]
   ).length;
+  const myScore = myCorrect * POINTS_PER_QUESTION;
+  const newPicksCount = Object.keys(picks).filter((qId) => !savedPicks[qId]).length;
 
   const BetsHeader = () => (
     <header className="sticky top-0 z-10 bg-[#f5efe6]/95 backdrop-blur-sm border-b border-stone-200 px-5 py-3">
@@ -719,45 +727,54 @@ function BetsView() {
               Voting as <span className="font-medium text-stone-800">{name.trim()}</span> · {Object.keys(picks).length}/{BETS_QUESTIONS.length} answered
             </p>
             <div className="space-y-4">
-              {BETS_QUESTIONS.map((q, i) => (
-                <div key={q.id}>
-                  {(i === 0 || BETS_QUESTIONS[i - 1].section !== q.section) && (
-                    <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400 pt-2 pb-1" style={{ fontFamily: 'Inter, sans-serif' }}>{q.section}</p>
-                  )}
-                  <div className="bg-white/70 border border-stone-200 rounded-2xl px-5 py-4">
-                    <p className="text-lg italic font-medium mb-3">{q.text}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {q.options.map((opt) => (
-                        <button
-                          key={opt}
-                          onClick={() => setPicks((p) => ({ ...p, [q.id]: opt }))}
-                          className={`px-4 py-2 rounded-xl text-sm transition border ${
-                            picks[q.id] === opt
-                              ? 'bg-stone-900 text-stone-50 border-stone-900'
-                              : 'bg-white border-stone-200 text-stone-700 hover:border-stone-400'
-                          }`}
-                          style={{ fontFamily: 'Inter, sans-serif' }}
-                        >
-                          {opt}
-                        </button>
-                      ))}
+              {BETS_QUESTIONS.map((q, i) => {
+                const isRevealed = !!bets.correctAnswers[q.id];
+                const isLocked = !!savedPicks[q.id];
+                return (
+                  <div key={q.id}>
+                    {(i === 0 || BETS_QUESTIONS[i - 1].section !== q.section) && (
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400 pt-2 pb-1" style={{ fontFamily: 'Inter, sans-serif' }}>{q.section}</p>
+                    )}
+                    <div className={`border rounded-2xl px-5 py-4 ${isRevealed ? 'bg-stone-50 border-stone-200 opacity-70' : isLocked ? 'bg-emerald-50/50 border-emerald-200' : 'bg-white/70 border-stone-200'}`}>
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-lg italic font-medium">{q.text}</p>
+                        {isLocked && !isRevealed && <span className="text-[10px] text-emerald-600 ml-2 flex-shrink-0" style={{ fontFamily: 'Inter, sans-serif' }}>✓ locked</span>}
+                        {isRevealed && <span className="text-[10px] text-stone-400 ml-2 flex-shrink-0" style={{ fontFamily: 'Inter, sans-serif' }}>Answer revealed</span>}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {q.options.map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => { if (!isRevealed && !isLocked) setPicks((p) => ({ ...p, [q.id]: opt })); }}
+                            disabled={isRevealed || isLocked}
+                            className={`px-4 py-2 rounded-xl text-sm transition border ${
+                              picks[q.id] === opt
+                                ? isLocked ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-stone-900 text-stone-50 border-stone-900'
+                                : 'bg-white border-stone-200 text-stone-500'
+                            } disabled:cursor-not-allowed`}
+                            style={{ fontFamily: 'Inter, sans-serif' }}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <button
               onClick={handleSubmit}
-              disabled={Object.keys(picks).length < BETS_QUESTIONS.length || submitting}
+              disabled={newPicksCount === 0 || submitting}
               className="w-full mt-6 py-3.5 bg-stone-900 text-stone-50 hover:bg-stone-700 disabled:opacity-40 rounded-2xl text-base transition"
               style={{ fontFamily: 'Inter, sans-serif' }}
             >
-              {submitting ? 'Submitting…' : 'Lock in my picks →'}
+              {submitting ? 'Locking in…' : newPicksCount > 0 ? `Lock in ${newPicksCount} pick${newPicksCount > 1 ? 's' : ''} →` : 'Select a pick above'}
             </button>
-            {Object.keys(picks).length < BETS_QUESTIONS.length && (
-              <p className="text-center text-xs text-stone-400 mt-2" style={{ fontFamily: 'Inter, sans-serif' }}>
-                Answer all {BETS_QUESTIONS.length} questions to submit
-              </p>
+            {Object.keys(savedPicks).length > 0 && (
+              <button onClick={() => setStep('done')} className="w-full mt-2 py-2 text-sm text-stone-400 hover:text-stone-700 transition" style={{ fontFamily: 'Inter, sans-serif' }}>
+                View my picks recap →
+              </button>
             )}
           </div>
         )}
@@ -768,9 +785,9 @@ function BetsView() {
             {answeredCount > 0 && (
               <div className="bg-stone-900 text-stone-50 rounded-2xl px-6 py-6 text-center mb-6">
                 <Trophy className="w-8 h-8 mx-auto mb-2 text-stone-400" />
-                <p className="text-4xl font-medium italic mb-1">{myScore}/{answeredCount}</p>
+                <p className="text-4xl font-medium italic mb-1">{myScore} pts</p>
                 <p className="text-sm text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>
-                  correct so far · {BETS_QUESTIONS.length - answeredCount} questions still pending
+                  {myCorrect} of {answeredCount} correct · {POINTS_PER_QUESTION} pts each · {BETS_QUESTIONS.length - answeredCount} still pending
                 </p>
               </div>
             )}
@@ -780,7 +797,7 @@ function BetsView() {
                 <p className="text-sm text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>Scores will appear as the night unfolds.</p>
               </div>
             )}
-            <div className="space-y-3 mb-6">
+            <div className="space-y-3 mb-4">
               {BETS_QUESTIONS.map((q, i) => {
                 const correct = bets.correctAnswers[q.id];
                 const myPick = picks[q.id];
@@ -791,19 +808,32 @@ function BetsView() {
                     {(i === 0 || BETS_QUESTIONS[i - 1].section !== q.section) && (
                       <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400 pt-2 pb-1" style={{ fontFamily: 'Inter, sans-serif' }}>{q.section}</p>
                     )}
-                    <div className={`rounded-xl px-4 py-3 border ${isRight ? 'bg-emerald-50 border-emerald-200' : isWrong ? 'bg-rose-50 border-rose-200' : 'bg-white/70 border-stone-200'}`}>
+                    <div className={`rounded-xl px-4 py-3 border ${isRight ? 'bg-emerald-50 border-emerald-200' : isWrong ? 'bg-rose-50 border-rose-200' : myPick ? 'bg-white/70 border-stone-200' : 'bg-stone-50 border-dashed border-stone-200'}`}>
                       <p className="text-xs text-stone-500 mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>{q.text}</p>
                       <div className="flex items-center justify-between gap-2">
-                        <p className={`text-base italic font-medium ${isRight ? 'text-emerald-800' : isWrong ? 'text-rose-700 line-through' : 'text-stone-800'}`}>{myPick}</p>
-                        {isRight && <span className="text-emerald-600 text-lg">✓</span>}
-                        {isWrong && <span className="text-xs text-stone-500" style={{ fontFamily: 'Inter, sans-serif' }}>→ {correct}</span>}
-                        {!correct && <span className="text-[10px] text-stone-300 uppercase tracking-wider" style={{ fontFamily: 'Inter, sans-serif' }}>Pending</span>}
+                        {myPick ? (
+                          <>
+                            <p className={`text-base italic font-medium ${isRight ? 'text-emerald-800' : isWrong ? 'text-rose-700 line-through' : 'text-stone-800'}`}>{myPick}</p>
+                            {isRight && <span className="text-emerald-600 text-sm font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>+{POINTS_PER_QUESTION}pts</span>}
+                            {isWrong && <span className="text-xs text-stone-500" style={{ fontFamily: 'Inter, sans-serif' }}>→ {correct}</span>}
+                            {!correct && <span className="text-[10px] text-stone-300 uppercase tracking-wider" style={{ fontFamily: 'Inter, sans-serif' }}>Pending</span>}
+                          </>
+                        ) : (
+                          <p className="text-sm italic text-stone-400">Not answered yet</p>
+                        )}
                       </div>
                     </div>
                   </div>
                 );
               })}
             </div>
+            <button
+              onClick={() => setStep('voting')}
+              className="w-full mb-3 py-3 border border-stone-300 hover:bg-stone-100 rounded-2xl text-sm text-stone-600 transition"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              + Add more picks
+            </button>
             <a href="#leaderboard" className="block text-center w-full py-3.5 bg-stone-900 text-stone-50 hover:bg-stone-700 rounded-2xl text-sm transition" style={{ fontFamily: 'Inter, sans-serif' }}>
               🏆 View Leaderboard
             </a>
@@ -824,7 +854,7 @@ function LeaderboardView() {
   const voters = Object.values(bets.votes)
     .map((v) => ({
       name: v.displayName,
-      score: answeredQs.filter((q) => v[q.id] === bets.correctAnswers[q.id]).length,
+      score: answeredQs.filter((q) => v[q.id] === bets.correctAnswers[q.id]).length * POINTS_PER_QUESTION,
       picks: v,
     }))
     .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
@@ -886,12 +916,12 @@ function LeaderboardView() {
                       {answeredQs.length > 0 && (
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <span className={`text-sm font-medium ${i === 0 ? 'text-stone-300' : 'text-stone-600'}`} style={{ fontFamily: 'Inter, sans-serif' }}>
-                            {v.score}/{answeredQs.length}
+                            {v.score}pts
                           </span>
                           <div className="w-16 h-1.5 rounded-full bg-stone-200 overflow-hidden">
                             <div
                               className={`h-full rounded-full ${i === 0 ? 'bg-stone-400' : 'bg-stone-700'}`}
-                              style={{ width: `${(v.score / answeredQs.length) * 100}%` }}
+                              style={{ width: `${(v.score / (answeredQs.length * POINTS_PER_QUESTION)) * 100}%` }}
                             />
                           </div>
                         </div>
