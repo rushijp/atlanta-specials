@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from './firebase';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, updateDoc, deleteField } from 'firebase/firestore';
 import {
   Camera,
   Plus,
@@ -16,10 +16,15 @@ import {
   Edit3,
   Heart,
   Wifi,
+  Trophy,
+  Lock,
+  Unlock,
+  Users,
 } from 'lucide-react';
 
 // ─── Firestore ─────────────────────────────────────────────────────────────
 const QUEUE_DOC = doc(db, 'wedding', 'photoQueue');
+const BETS_DOC  = doc(db, 'wedding', 'bets');
 
 const DEFAULT_STATE = {
   groups: [],
@@ -29,6 +34,8 @@ const DEFAULT_STATE = {
   initialized: true,
 };
 
+const DEFAULT_BETS = { votingLocked: false, correctAnswers: {}, votes: {} };
+
 const ADMIN_PASSWORD = 'br2026';
 
 async function persistState(newState) {
@@ -37,7 +44,48 @@ async function persistState(newState) {
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
-// ─── Shared real-time hook ─────────────────────────────────────────────────
+// ─── Bets questions ────────────────────────────────────────────────────────
+const BETS_QUESTIONS = [
+  { id: 'q1', text: "What color will Brijal's dress be?",              options: ['Red', 'Pink', 'Cream'] },
+  { id: 'q2', text: 'What will the late night snack be?',              options: ['Pizza', 'Taco Bell', 'Something local', 'Waffle House'] },
+  { id: 'q3', text: 'Will the first dance be choreographed?',          options: ['Yes', 'No'] },
+  { id: 'q4', text: "How long will Rushi's Parents' speech be?",       options: ['Over 4 mins', 'Under 4 mins'] },
+  { id: 'q5', text: "How long will Brijal's Parents' speech be?",      options: ['Over 5 mins', 'Under 5 mins'] },
+  { id: 'q6', text: 'How long will the first dance be?',               options: ['Over 100 seconds', 'Under 100 seconds'] },
+  { id: 'q7', text: 'Will a flower boy go rogue during the entrance?', options: ['Yes', 'No'] },
+  { id: 'q8', text: 'Notable dance floor injuries?',                   options: ['Over 1.5', 'Under 1.5'] },
+  { id: 'q9', text: 'Will anyone cry during the speeches?',            options: ['Yes', 'No'] },
+];
+
+const BAD_WORDS = [
+  'fuck','shit','ass','bitch','cunt','dick','pussy','cock','bastard','piss',
+  'damn','hell','slut','whore','fag','nigger','nigga','chink','spic','kike',
+  'retard','crap','douche','moron','idiot',
+];
+
+function isCleanName(name) {
+  const lower = name.toLowerCase();
+  return !BAD_WORDS.some((w) => lower.includes(w));
+}
+
+// ─── Shared real-time hooks ────────────────────────────────────────────────
+function useBetsState() {
+  const [bets, setBets] = useState(DEFAULT_BETS);
+  const [betsLoading, setBetsLoading] = useState(true);
+  useEffect(() => {
+    const unsub = onSnapshot(
+      BETS_DOC,
+      (snap) => {
+        setBets(snap.exists() ? { ...DEFAULT_BETS, ...snap.data() } : DEFAULT_BETS);
+        setBetsLoading(false);
+      },
+      () => setBetsLoading(false)
+    );
+    return unsub;
+  }, []);
+  return { bets, betsLoading };
+}
+
 function useQueueState() {
   const [state, setState] = useState(DEFAULT_STATE);
   const [loading, setLoading] = useState(true);
@@ -68,6 +116,8 @@ function useView() {
     const h = window.location.hash.replace('#', '').toLowerCase();
     if (h === 'admin') return 'admin';
     if (h === 'display') return 'display';
+    if (h === 'bets') return 'bets';
+    if (h === 'leaderboard') return 'leaderboard';
     return 'public'; // bare URL → guest view
   };
   const [view, setView] = useState(getView);
@@ -97,6 +147,8 @@ export default function App() {
   const { state, loading, connected } = useQueueState();
   const { authed, unlock } = useAdminAuth();
 
+  if (view === 'bets') return <BetsView />;
+  if (view === 'leaderboard') return <LeaderboardView />;
   if (loading) return <LoadingScreen />;
   if (view === 'display') return <DisplayView state={state} />;
   if (view === 'admin') {
@@ -184,16 +236,23 @@ function PublicView({ state, connected }) {
               </h1>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Wifi
-              className={`w-3.5 h-3.5 ${connected ? 'text-emerald-600' : 'text-stone-300'}`}
-            />
-            <span
-              className={`text-[10px] ${connected ? 'text-emerald-600' : 'text-stone-400'}`}
+          <div className="flex items-center gap-3">
+            <a
+              href="#bets"
+              className="text-[10px] text-stone-400 hover:text-stone-700 transition"
               style={{ fontFamily: 'Inter, sans-serif' }}
             >
-              {connected ? 'Live' : 'Connecting…'}
-            </span>
+              🎲 Bets
+            </a>
+            <div className="flex items-center gap-1.5">
+              <Wifi className={`w-3.5 h-3.5 ${connected ? 'text-emerald-600' : 'text-stone-300'}`} />
+              <span
+                className={`text-[10px] ${connected ? 'text-emerald-600' : 'text-stone-400'}`}
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                {connected ? 'Live' : 'Connecting…'}
+              </span>
+            </div>
           </div>
         </div>
       </header>
@@ -509,6 +568,381 @@ function PublicView({ state, connected }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// BETS VIEW — guest predictions
+// ═══════════════════════════════════════════════════════════════════════════
+function BetsView() {
+  const { bets, betsLoading } = useBetsState();
+  const [name, setName] = useState(() => localStorage.getItem('wq_bets_name') || '');
+  const [picks, setPicks] = useState({});
+  const [step, setStep] = useState('name'); // 'name' | 'voting' | 'done'
+  const [nameError, setNameError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const normalizeName = (n) => n.trim().toLowerCase();
+
+  const handleNameSubmit = () => {
+    const trimmed = name.trim();
+    if (trimmed.length < 2) { setNameError('Please enter your full name.'); return; }
+    if (trimmed.length > 40) { setNameError('Name is too long.'); return; }
+    if (!/^[a-zA-Z\s'-]+$/.test(trimmed)) { setNameError('Please use letters only.'); return; }
+    if (!isCleanName(trimmed)) { setNameError('Please enter your real name.'); return; }
+
+    const key = normalizeName(trimmed);
+    if (bets.votingLocked && !bets.votes[key]) {
+      setStep('locked');
+      return;
+    }
+    if (bets.votes[key]) {
+      const existing = bets.votes[key];
+      const loaded = {};
+      BETS_QUESTIONS.forEach((q) => { if (existing[q.id]) loaded[q.id] = existing[q.id]; });
+      setPicks(loaded);
+      localStorage.setItem('wq_bets_name', trimmed);
+      setStep('done');
+      return;
+    }
+    localStorage.setItem('wq_bets_name', trimmed);
+    setStep('voting');
+  };
+
+  const handleSubmit = async () => {
+    if (Object.keys(picks).length < BETS_QUESTIONS.length) return;
+    setSubmitting(true);
+    try {
+      const key = normalizeName(name.trim());
+      await setDoc(BETS_DOC, {
+        votes: { [key]: { displayName: name.trim(), ...picks } },
+      }, { merge: true });
+      setStep('done');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const answeredCount = BETS_QUESTIONS.filter((q) => bets.correctAnswers[q.id]).length;
+  const myScore = BETS_QUESTIONS.filter(
+    (q) => bets.correctAnswers[q.id] && picks[q.id] === bets.correctAnswers[q.id]
+  ).length;
+
+  const BetsHeader = () => (
+    <header className="sticky top-0 z-10 bg-[#f5efe6]/95 backdrop-blur-sm border-b border-stone-200 px-5 py-3">
+      <div className="flex items-center justify-between max-w-lg mx-auto">
+        <div className="flex items-center gap-3">
+          <img src="/BR_Monogram Only_Black.png" alt="B&R" className="w-9 h-9 object-contain opacity-85" />
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>Wedding Bets</p>
+            <h1 className="text-lg font-medium italic leading-tight">Brijal & Rushi</h1>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 text-[10px]" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <a href="#leaderboard" className="text-stone-400 hover:text-stone-700 transition">🏆 Scores</a>
+          <a href="#" className="text-stone-400 hover:text-stone-700 transition">📷 Queue</a>
+        </div>
+      </div>
+    </header>
+  );
+
+  if (betsLoading) return (
+    <PageFrame>
+      <BetsHeader />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <img src="/BR_Monogram Only_Black.png" alt="" className="w-10 animate-pulse opacity-30" />
+      </div>
+    </PageFrame>
+  );
+
+  return (
+    <PageFrame>
+      <BetsHeader />
+      <main className="max-w-lg mx-auto px-4 pt-6 pb-16">
+
+        {/* ── NAME STEP ── */}
+        {step === 'name' && (
+          <div>
+            <div className="mb-8 text-center">
+              <Trophy className="w-10 h-10 mx-auto mb-3 text-stone-400" />
+              <h2 className="text-3xl italic font-medium mb-2">Make your picks</h2>
+              <p className="text-stone-500 text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Predict what happens at the wedding. Scores reveal live on the big night.
+              </p>
+            </div>
+            <label className="block text-[10px] uppercase tracking-[0.3em] text-stone-500 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Your name
+            </label>
+            <input
+              autoFocus
+              type="text"
+              value={name}
+              onChange={(e) => { setName(e.target.value); setNameError(''); }}
+              onKeyDown={(e) => e.key === 'Enter' && handleNameSubmit()}
+              placeholder="First & last name"
+              className={`w-full bg-white/80 border rounded-2xl px-4 py-3.5 text-base focus:outline-none transition mb-1 ${nameError ? 'border-rose-400' : 'border-stone-200 focus:border-stone-400'}`}
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            />
+            {nameError && <p className="text-rose-500 text-xs mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>{nameError}</p>}
+            {!nameError && <div className="mb-3" />}
+            <button
+              onClick={handleNameSubmit}
+              className="w-full py-3.5 bg-stone-900 text-stone-50 hover:bg-stone-700 rounded-2xl text-base transition"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              Let's go →
+            </button>
+            <p className="text-center text-xs text-stone-400 mt-4" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Already voted? Enter the same name to see your picks.
+            </p>
+          </div>
+        )}
+
+        {/* ── VOTING LOCKED ── */}
+        {step === 'locked' && (
+          <div className="text-center py-16">
+            <Lock className="w-10 h-10 mx-auto mb-4 text-stone-300" />
+            <h2 className="text-2xl italic mb-2">Voting is closed</h2>
+            <p className="text-stone-500 text-sm mb-6" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Picks are locked. Check the leaderboard to see how everyone did.
+            </p>
+            <a href="#leaderboard" className="inline-block px-6 py-3 bg-stone-900 text-stone-50 rounded-2xl text-sm hover:bg-stone-700 transition" style={{ fontFamily: 'Inter, sans-serif' }}>
+              View Leaderboard
+            </a>
+          </div>
+        )}
+
+        {/* ── VOTING STEP ── */}
+        {step === 'voting' && (
+          <div>
+            <p className="text-sm text-stone-500 mb-6 text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Voting as <span className="font-medium text-stone-800">{name.trim()}</span> · {Object.keys(picks).length}/{BETS_QUESTIONS.length} answered
+            </p>
+            <div className="space-y-4">
+              {BETS_QUESTIONS.map((q) => (
+                <div key={q.id} className="bg-white/70 border border-stone-200 rounded-2xl px-5 py-4">
+                  <p className="text-lg italic font-medium mb-3">{q.text}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {q.options.map((opt) => (
+                      <button
+                        key={opt}
+                        onClick={() => setPicks((p) => ({ ...p, [q.id]: opt }))}
+                        className={`px-4 py-2 rounded-xl text-sm transition border ${
+                          picks[q.id] === opt
+                            ? 'bg-stone-900 text-stone-50 border-stone-900'
+                            : 'bg-white border-stone-200 text-stone-700 hover:border-stone-400'
+                        }`}
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={handleSubmit}
+              disabled={Object.keys(picks).length < BETS_QUESTIONS.length || submitting}
+              className="w-full mt-6 py-3.5 bg-stone-900 text-stone-50 hover:bg-stone-700 disabled:opacity-40 rounded-2xl text-base transition"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              {submitting ? 'Submitting…' : 'Lock in my picks →'}
+            </button>
+            {Object.keys(picks).length < BETS_QUESTIONS.length && (
+              <p className="text-center text-xs text-stone-400 mt-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Answer all {BETS_QUESTIONS.length} questions to submit
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ── DONE STEP ── */}
+        {step === 'done' && (
+          <div>
+            {answeredCount > 0 && (
+              <div className="bg-stone-900 text-stone-50 rounded-2xl px-6 py-6 text-center mb-6">
+                <Trophy className="w-8 h-8 mx-auto mb-2 text-stone-400" />
+                <p className="text-4xl font-medium italic mb-1">{myScore}/{answeredCount}</p>
+                <p className="text-sm text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  correct so far · {BETS_QUESTIONS.length - answeredCount} questions still pending
+                </p>
+              </div>
+            )}
+            {answeredCount === 0 && (
+              <div className="bg-stone-100 rounded-2xl px-6 py-6 text-center mb-6">
+                <p className="text-xl italic text-stone-600 mb-1">Picks locked in!</p>
+                <p className="text-sm text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>Scores will appear as the night unfolds.</p>
+              </div>
+            )}
+            <div className="space-y-3 mb-6">
+              {BETS_QUESTIONS.map((q) => {
+                const correct = bets.correctAnswers[q.id];
+                const myPick = picks[q.id];
+                const isRight = correct && myPick === correct;
+                const isWrong = correct && myPick !== correct;
+                return (
+                  <div key={q.id} className={`rounded-xl px-4 py-3 border ${isRight ? 'bg-emerald-50 border-emerald-200' : isWrong ? 'bg-rose-50 border-rose-200' : 'bg-white/70 border-stone-200'}`}>
+                    <p className="text-xs text-stone-500 mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>{q.text}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className={`text-base italic font-medium ${isRight ? 'text-emerald-800' : isWrong ? 'text-rose-700 line-through' : 'text-stone-800'}`}>{myPick}</p>
+                      {isRight && <span className="text-emerald-600 text-lg">✓</span>}
+                      {isWrong && <span className="text-xs text-stone-500" style={{ fontFamily: 'Inter, sans-serif' }}>→ {correct}</span>}
+                      {!correct && <span className="text-[10px] text-stone-300 uppercase tracking-wider" style={{ fontFamily: 'Inter, sans-serif' }}>Pending</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <a href="#leaderboard" className="block text-center w-full py-3.5 bg-stone-900 text-stone-50 hover:bg-stone-700 rounded-2xl text-sm transition" style={{ fontFamily: 'Inter, sans-serif' }}>
+              🏆 View Leaderboard
+            </a>
+          </div>
+        )}
+      </main>
+    </PageFrame>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LEADERBOARD VIEW
+// ═══════════════════════════════════════════════════════════════════════════
+function LeaderboardView() {
+  const { bets, betsLoading } = useBetsState();
+
+  const answeredQs = BETS_QUESTIONS.filter((q) => bets.correctAnswers[q.id]);
+  const voters = Object.values(bets.votes)
+    .map((v) => ({
+      name: v.displayName,
+      score: answeredQs.filter((q) => v[q.id] === bets.correctAnswers[q.id]).length,
+      picks: v,
+    }))
+    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+
+  return (
+    <PageFrame>
+      <header className="sticky top-0 z-10 bg-[#f5efe6]/95 backdrop-blur-sm border-b border-stone-200 px-5 py-3">
+        <div className="flex items-center justify-between max-w-lg mx-auto">
+          <div className="flex items-center gap-3">
+            <img src="/BR_Monogram Only_Black.png" alt="B&R" className="w-9 h-9 object-contain opacity-85" />
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>Leaderboard</p>
+              <h1 className="text-lg font-medium italic leading-tight">Wedding Bets</h1>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 text-[10px]" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <a href="#bets" className="text-stone-400 hover:text-stone-700 transition">🎲 My Picks</a>
+            <a href="#" className="text-stone-400 hover:text-stone-700 transition">📷 Queue</a>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-lg mx-auto px-4 pt-6 pb-16">
+        {betsLoading ? (
+          <div className="flex justify-center py-20">
+            <img src="/BR_Monogram Only_Black.png" alt="" className="w-10 animate-pulse opacity-30" />
+          </div>
+        ) : (
+          <>
+            {/* Stats bar */}
+            <div className="flex justify-center gap-8 mb-6 py-4 bg-white/60 rounded-2xl border border-stone-200">
+              <div className="text-center">
+                <p className="text-2xl font-medium italic">{answeredQs.length}<span className="text-stone-400 text-lg">/9</span></p>
+                <p className="text-[10px] uppercase tracking-wider text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>Answered</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-medium italic">{voters.length}</p>
+                <p className="text-[10px] uppercase tracking-wider text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>Guests</p>
+              </div>
+            </div>
+
+            {answeredQs.length === 0 && (
+              <p className="text-center text-stone-400 italic text-sm mb-6" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Scores will appear as the night unfolds 🎉
+              </p>
+            )}
+
+            {/* Rankings */}
+            {voters.length > 0 && (
+              <section className="mb-8">
+                <p className="text-[10px] uppercase tracking-[0.3em] text-stone-500 mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>Rankings</p>
+                <div className="space-y-2">
+                  {voters.map((v, i) => (
+                    <div key={v.name} className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${i === 0 && answeredQs.length > 0 ? 'bg-stone-900 text-stone-50 border-stone-900' : 'bg-white/70 border-stone-200'}`}>
+                      <span className={`text-sm w-6 text-right flex-shrink-0 ${i === 0 && answeredQs.length > 0 ? 'text-stone-400' : 'text-stone-400'}`} style={{ fontFamily: 'Inter, sans-serif' }}>
+                        {i === 0 && answeredQs.length > 0 ? '🏆' : `#${i + 1}`}
+                      </span>
+                      <span className="flex-1 text-base italic font-medium">{v.name}</span>
+                      {answeredQs.length > 0 && (
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className={`text-sm font-medium ${i === 0 ? 'text-stone-300' : 'text-stone-600'}`} style={{ fontFamily: 'Inter, sans-serif' }}>
+                            {v.score}/{answeredQs.length}
+                          </span>
+                          <div className="w-16 h-1.5 rounded-full bg-stone-200 overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${i === 0 ? 'bg-stone-400' : 'bg-stone-700'}`}
+                              style={{ width: `${(v.score / answeredQs.length) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Per-question breakdown (only for answered questions) */}
+            {answeredQs.length > 0 && (
+              <section>
+                <p className="text-[10px] uppercase tracking-[0.3em] text-stone-500 mb-3" style={{ fontFamily: 'Inter, sans-serif' }}>Results</p>
+                <div className="space-y-3">
+                  {answeredQs.map((q) => {
+                    const total = voters.length || 1;
+                    return (
+                      <div key={q.id} className="bg-white/70 border border-stone-200 rounded-xl px-4 py-4">
+                        <p className="text-base italic font-medium mb-3">{q.text}</p>
+                        <div className="space-y-2">
+                          {q.options.map((opt) => {
+                            const count = voters.filter((v) => v.picks[q.id] === opt).length;
+                            const pct = Math.round((count / total) * 100);
+                            const isCorrect = opt === bets.correctAnswers[q.id];
+                            return (
+                              <div key={opt}>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className={`text-sm flex items-center gap-1.5 ${isCorrect ? 'font-medium text-emerald-700' : 'text-stone-600'}`} style={{ fontFamily: 'Inter, sans-serif' }}>
+                                    {isCorrect && '✓ '}{opt}
+                                  </span>
+                                  <span className="text-xs text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>{count} · {pct}%</span>
+                                </div>
+                                <div className="h-1.5 rounded-full bg-stone-100 overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full ${isCorrect ? 'bg-emerald-500' : 'bg-stone-300'}`}
+                                    style={{ width: `${pct}%` }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {voters.length === 0 && (
+              <div className="text-center py-12">
+                <Users className="w-8 h-8 mx-auto mb-3 text-stone-300" />
+                <p className="text-stone-400 italic">No votes yet</p>
+                <a href="#bets" className="mt-3 inline-block text-sm text-stone-500 hover:text-stone-800 underline underline-offset-2" style={{ fontFamily: 'Inter, sans-serif' }}>Be the first to vote</a>
+              </div>
+            )}
+          </>
+        )}
+      </main>
+    </PageFrame>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // DISPLAY VIEW — venue TV / projector
 // ═══════════════════════════════════════════════════════════════════════════
 function DisplayView({ state }) {
@@ -702,6 +1136,7 @@ function AdminPasswordScreen({ onUnlock }) {
 // ADMIN VIEW — full control
 // ═══════════════════════════════════════════════════════════════════════════
 function AdminView({ state }) {
+  const [adminTab, setAdminTab] = useState('queue');
   const [showAdd, setShowAdd] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [showLinks, setShowLinks] = useState(false);
@@ -833,9 +1268,25 @@ function AdminView({ state }) {
               </button>
             </div>
           </div>
-          <div className="mt-5 h-px bg-gradient-to-r from-transparent via-stone-300 to-transparent" />
+          {/* Tab switcher */}
+          <div className="flex gap-1 mt-4 p-1 bg-stone-100 rounded-xl w-fit">
+            {['queue', 'bets'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setAdminTab(tab)}
+                className={`px-4 py-1.5 rounded-lg text-sm transition capitalize ${adminTab === tab ? 'bg-white shadow-sm text-stone-900 font-medium' : 'text-stone-500 hover:text-stone-800'}`}
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                {tab === 'queue' ? '📷 Queue' : '🎲 Bets'}
+              </button>
+            ))}
+          </div>
+          <div className="mt-4 h-px bg-gradient-to-r from-transparent via-stone-300 to-transparent" />
         </header>
 
+        {adminTab === 'bets' && <AdminBetsPanel />}
+
+        {adminTab === 'queue' && <>
         {saving && (
           <div
             className="mb-4 text-xs text-stone-500 italic text-right"
@@ -1028,6 +1479,7 @@ function AdminView({ state }) {
             )}
           </section>
         )}
+        </>}
       </div>
 
       {showAdd && (
@@ -1053,6 +1505,172 @@ function Label({ children }) {
     >
       {children}
     </p>
+  );
+}
+
+function AdminBetsPanel() {
+  const { bets } = useBetsState();
+  const [confirmClearAnswers, setConfirmClearAnswers] = useState(false);
+  const [confirmClearVotes, setConfirmClearVotes] = useState(false);
+
+  const voterEntries = Object.entries(bets.votes);
+  const answeredCount = BETS_QUESTIONS.filter((q) => bets.correctAnswers[q.id]).length;
+
+  const toggleLock = () =>
+    setDoc(BETS_DOC, { votingLocked: !bets.votingLocked }, { merge: true });
+
+  const setAnswer = (qId, opt) => {
+    if (bets.correctAnswers[qId] === opt) {
+      updateDoc(BETS_DOC, { [`correctAnswers.${qId}`]: deleteField() });
+    } else {
+      setDoc(BETS_DOC, { correctAnswers: { [qId]: opt } }, { merge: true });
+    }
+  };
+
+  const clearAnswers = async () => {
+    await setDoc(BETS_DOC, { correctAnswers: {} }, { merge: true });
+    setConfirmClearAnswers(false);
+  };
+
+  const clearVotes = async () => {
+    await setDoc(BETS_DOC, { votes: {} }, { merge: true });
+    setConfirmClearVotes(false);
+  };
+
+  const removeVoter = (key) =>
+    updateDoc(BETS_DOC, { [`votes.${key}`]: deleteField() });
+
+  const totalVoters = voterEntries.length;
+
+  return (
+    <div className="space-y-6">
+      {/* Controls row */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <button
+          onClick={toggleLock}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm border transition ${
+            bets.votingLocked
+              ? 'bg-rose-50 border-rose-300 text-rose-700 hover:bg-rose-100'
+              : 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100'
+          }`}
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          {bets.votingLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+          {bets.votingLocked ? 'Voting Locked' : 'Voting Open'}
+        </button>
+
+        {confirmClearAnswers ? (
+          <span className="flex items-center gap-1.5" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <span className="text-xs text-stone-600">Clear all answers?</span>
+            <button onClick={clearAnswers} className="text-xs px-2 py-1 bg-rose-600 text-white rounded-lg">Yes</button>
+            <button onClick={() => setConfirmClearAnswers(false)} className="text-xs px-2 py-1 border border-stone-300 rounded-lg text-stone-500">No</button>
+          </span>
+        ) : (
+          <button
+            onClick={() => setConfirmClearAnswers(true)}
+            className="text-xs px-3 py-2 border border-stone-200 rounded-lg text-stone-500 hover:text-stone-800 hover:border-stone-400 transition"
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          >
+            Clear all answers
+          </button>
+        )}
+
+        {confirmClearVotes ? (
+          <span className="flex items-center gap-1.5" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <span className="text-xs text-stone-600">Delete ALL votes?</span>
+            <button onClick={clearVotes} className="text-xs px-2 py-1 bg-rose-600 text-white rounded-lg">Yes, delete</button>
+            <button onClick={() => setConfirmClearVotes(false)} className="text-xs px-2 py-1 border border-stone-300 rounded-lg text-stone-500">No</button>
+          </span>
+        ) : (
+          <button
+            onClick={() => setConfirmClearVotes(true)}
+            className="text-xs px-3 py-2 border border-rose-200 rounded-lg text-rose-500 hover:text-rose-700 hover:border-rose-400 transition"
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          >
+            Delete all votes
+          </button>
+        )}
+      </div>
+
+      {/* Stats */}
+      <div className="flex gap-6 text-center">
+        <div>
+          <p className="text-2xl font-medium italic">{totalVoters}</p>
+          <p className="text-[10px] uppercase tracking-wider text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>Guests voted</p>
+        </div>
+        <div>
+          <p className="text-2xl font-medium italic">{answeredCount}<span className="text-stone-400 text-lg">/9</span></p>
+          <p className="text-[10px] uppercase tracking-wider text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>Answered</p>
+        </div>
+      </div>
+
+      {/* Questions */}
+      <div className="space-y-4">
+        {BETS_QUESTIONS.map((q) => {
+          const correct = bets.correctAnswers[q.id];
+          return (
+            <div key={q.id} className="bg-white/70 border border-stone-200 rounded-xl px-4 py-4">
+              <p className="text-base italic font-medium mb-3">{q.text}</p>
+              <div className="space-y-2">
+                {q.options.map((opt) => {
+                  const count = voterEntries.filter(([, v]) => v[q.id] === opt).length;
+                  const pct = totalVoters > 0 ? Math.round((count / totalVoters) * 100) : 0;
+                  const isSelected = correct === opt;
+                  return (
+                    <div key={opt}>
+                      <button
+                        onClick={() => setAnswer(q.id, opt)}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg border text-left transition ${
+                          isSelected
+                            ? 'bg-emerald-600 border-emerald-600 text-white'
+                            : 'bg-white border-stone-200 text-stone-700 hover:border-stone-400'
+                        }`}
+                        style={{ fontFamily: 'Inter, sans-serif' }}
+                      >
+                        <span className="text-sm">{opt} {isSelected && '✓'}</span>
+                        <span className={`text-xs ${isSelected ? 'text-emerald-100' : 'text-stone-400'}`}>{count} · {pct}%</span>
+                      </button>
+                      <div className="h-1 rounded-full bg-stone-100 mt-0.5 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${isSelected ? 'bg-emerald-400' : 'bg-stone-300'}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {correct && (
+                <p className="text-[10px] text-stone-400 mt-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  Tap the selected answer again to un-reveal it.
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Voter list with remove */}
+      {voterEntries.length > 0 && (
+        <div>
+          <Label>Voters · {voterEntries.length}</Label>
+          <div className="space-y-1">
+            {voterEntries.map(([key, v]) => (
+              <div key={key} className="flex items-center justify-between px-3 py-2 bg-stone-50 border border-stone-100 rounded-lg">
+                <span className="text-sm italic text-stone-700">{v.displayName}</span>
+                <button
+                  onClick={() => removeVoter(key)}
+                  className="text-stone-300 hover:text-rose-500 transition p-1"
+                  title="Remove this voter"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1271,6 +1889,18 @@ function ShareLinksModal({ onClose }) {
           label: 'Venue Display',
           desc: 'Large text for a TV or projector',
           url: `${base}#display`,
+        },
+        {
+          key: 'bets',
+          label: 'Wedding Bets',
+          desc: 'Vote on wedding predictions',
+          url: `${base}#bets`,
+        },
+        {
+          key: 'leaderboard',
+          label: 'Leaderboard',
+          desc: 'Live scores as answers are revealed',
+          url: `${base}#leaderboard`,
         },
       ].map(({ key, label, desc, url }) => (
         <div key={key} className="mb-3 p-4 border border-stone-200 rounded-xl bg-white/60">
