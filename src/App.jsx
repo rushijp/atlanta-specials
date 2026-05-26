@@ -695,7 +695,6 @@ function BetsView() {
       {flowerPopup && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-6" onClick={() => setFlowerPopup(null)}>
           <div className="bg-white rounded-3xl px-8 py-10 max-w-xs w-full text-center shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <p className="text-5xl mb-4">🌸</p>
             <p className="text-2xl font-medium italic mb-2">
               {flowerPopup === 'Yes' ? 'Honestly fair 🤷' : 'I have faith as well'}
             </p>
@@ -868,6 +867,21 @@ function BetsView() {
                           <p className="text-sm italic text-stone-400">Not answered yet</p>
                         )}
                       </div>
+                      {correct && q.id === 'q1' && (
+                        <p className="text-xs text-stone-500 mt-2 italic" style={{ fontFamily: 'Inter, sans-serif' }}>She is just Stunning isn't she! I'm very lucky!</p>
+                      )}
+                      {correct && q.id === 'q7' && correct === 'Yes' && (
+                        <p className="text-xs text-stone-500 mt-2 italic" style={{ fontFamily: 'Inter, sans-serif' }}>It was Sahil I bet</p>
+                      )}
+                      {correct && q.id === 'q7' && correct === 'No' && (
+                        <p className="text-xs text-stone-500 mt-2 italic" style={{ fontFamily: 'Inter, sans-serif' }}>The boys locked in! 😎</p>
+                      )}
+                      {correct && q.id === 'q12' && correct === 'Yes' && (
+                        <p className="text-xs text-stone-500 mt-2 italic" style={{ fontFamily: 'Inter, sans-serif' }}>I'm broke ask my dad. He is semi-retired.</p>
+                      )}
+                      {correct && q.id === 'q12' && correct === 'No' && (
+                        <p className="text-xs text-stone-500 mt-2 italic" style={{ fontFamily: 'Inter, sans-serif' }}>Honestly surprised</p>
+                      )}
                     </div>
                   </div>
                 );
