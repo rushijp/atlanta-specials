@@ -58,6 +58,7 @@ const BETS_QUESTIONS = [
   { id: 'q9',  section: 'Reception', text: 'Will anyone cry during the speeches?',            options: ['Yes', 'No'] },
   { id: 'q8',  section: 'Reception', text: 'Notable dance floor injuries?',                   options: ['Over 1.5', 'Under 1.5'] },
   { id: 'q2',  section: 'Reception', text: 'What will the late night snack be?',              options: ['Pizza', 'Taco Bell', 'Something local', 'Waffle House'] },
+  { id: 'q11', section: 'Reception', text: 'Kids under 10 on the dance floor past 10:30pm?',  options: ['Over 8', 'Under 8'] },
 ];
 
 const BAD_WORDS = [
