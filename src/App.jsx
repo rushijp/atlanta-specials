@@ -55,6 +55,7 @@ const BETS_QUESTIONS = [
   { id: 'q7', text: 'Will a flower boy go rogue during the entrance?', options: ['Yes', 'No'] },
   { id: 'q8', text: 'Notable dance floor injuries?',                   options: ['Over 1.5', 'Under 1.5'] },
   { id: 'q9', text: 'Will anyone cry during the speeches?',            options: ['Yes', 'No'] },
+  { id: 'q10', text: 'What will the baraat car be?',                   options: ['Audi R8', 'Rolls Royce', 'Lamborghini', 'Corvette'] },
 ];
 
 const BAD_WORDS = [
@@ -843,7 +844,7 @@ function LeaderboardView() {
             {/* Stats bar */}
             <div className="flex justify-center gap-8 mb-6 py-4 bg-white/60 rounded-2xl border border-stone-200">
               <div className="text-center">
-                <p className="text-2xl font-medium italic">{answeredQs.length}<span className="text-stone-400 text-lg">/9</span></p>
+                <p className="text-2xl font-medium italic">{answeredQs.length}<span className="text-stone-400 text-lg">/{BETS_QUESTIONS.length}</span></p>
                 <p className="text-[10px] uppercase tracking-wider text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>Answered</p>
               </div>
               <div className="text-center">
@@ -1599,7 +1600,7 @@ function AdminBetsPanel() {
           <p className="text-[10px] uppercase tracking-wider text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>Guests voted</p>
         </div>
         <div>
-          <p className="text-2xl font-medium italic">{answeredCount}<span className="text-stone-400 text-lg">/9</span></p>
+          <p className="text-2xl font-medium italic">{answeredCount}<span className="text-stone-400 text-lg">/{BETS_QUESTIONS.length}</span></p>
           <p className="text-[10px] uppercase tracking-wider text-stone-400" style={{ fontFamily: 'Inter, sans-serif' }}>Answered</p>
         </div>
       </div>
