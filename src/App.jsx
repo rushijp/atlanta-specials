@@ -1308,6 +1308,13 @@ function AdminView({ state }) {
               </div>
             </div>
             <div className="flex gap-2 flex-shrink-0">
+              <a
+                href="#leaderboard"
+                className="flex items-center gap-1.5 px-3 py-2 border border-stone-300 hover:bg-stone-100 rounded-lg text-sm transition"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+              >
+                🏆 Scores
+              </a>
               <button
                 onClick={() => setShowLinks(true)}
                 className="flex items-center gap-1.5 px-3 py-2 border border-stone-300 hover:bg-stone-100 rounded-lg text-sm transition"
