@@ -584,6 +584,7 @@ function BetsView() {
   const [savedPicks, setSavedPicks] = useState({}); // what's already in Firestore
   const [step, setStep] = useState('name'); // 'name' | 'voting' | 'done'
   const [shoePopup, setShoePopup] = useState(null); // null | 'Yes' | 'No'
+  const [flowerPopup, setFlowerPopup] = useState(null); // null | 'Yes' | 'No'
   const [nameError, setNameError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -690,6 +691,25 @@ function BetsView() {
         </div>
       )}
 
+      {/* Flower boy popup */}
+      {flowerPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-6" onClick={() => setFlowerPopup(null)}>
+          <div className="bg-white rounded-3xl px-8 py-10 max-w-xs w-full text-center shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <p className="text-5xl mb-4">🌸</p>
+            <p className="text-2xl font-medium italic mb-2">
+              {flowerPopup === 'Yes' ? 'Honestly fair 🤷' : 'I have faith as well'}
+            </p>
+            <button
+              onClick={() => setFlowerPopup(null)}
+              className="mt-4 px-6 py-2.5 bg-stone-900 text-stone-50 rounded-2xl text-sm hover:bg-stone-700 transition"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              {flowerPopup === 'Yes' ? 'Ha, same' : "Let's hope so"}
+            </button>
+          </div>
+        </div>
+      )}
+
       <main className="max-w-lg mx-auto px-4 pt-6 pb-16">
 
         {/* ── NAME STEP ── */}
@@ -771,7 +791,7 @@ function BetsView() {
                         {q.options.map((opt) => (
                           <button
                             key={opt}
-                            onClick={() => { if (!isRevealed) { setPicks((p) => ({ ...p, [q.id]: opt })); if (q.id === 'q12') setShoePopup(opt); } }}
+                            onClick={() => { if (!isRevealed) { setPicks((p) => ({ ...p, [q.id]: opt })); if (q.id === 'q12') setShoePopup(opt); if (q.id === 'q7') setFlowerPopup(opt); } }}
                             disabled={isRevealed}
                             className={`px-4 py-2 rounded-xl text-sm transition border ${
                               picks[q.id] === opt
