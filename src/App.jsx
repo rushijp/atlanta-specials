@@ -868,7 +868,7 @@ function BetsView() {
                         )}
                       </div>
                       {correct && q.id === 'q1' && (
-                        <p className="text-xs text-stone-500 mt-2 italic" style={{ fontFamily: 'Inter, sans-serif' }}>She is just Stunning isn't she! I'm very lucky!</p>
+                        <p className="text-xs text-stone-500 mt-2 italic" style={{ fontFamily: 'Inter, sans-serif' }}>She is just stunning isn't she! I'm very lucky!</p>
                       )}
                       {correct && q.id === 'q7' && correct === 'Yes' && (
                         <p className="text-xs text-stone-500 mt-2 italic" style={{ fontFamily: 'Inter, sans-serif' }}>It was Sahil I bet</p>
