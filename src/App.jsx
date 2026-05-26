@@ -675,9 +675,9 @@ function BetsView() {
           <div className="bg-white rounded-3xl px-8 py-10 max-w-xs w-full text-center shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <p className="text-5xl mb-4">👟</p>
             <p className="text-2xl font-medium italic mb-2">
-              {shoePopup === 'No' ? "It won't be easy!" : 'Good choice!'}
+              {shoePopup === 'Yes' ? "It won't be easy!" : 'Good choice!'}
             </p>
-            {shoePopup === 'Yes' && (
+            {shoePopup === 'No' && (
               <p className="text-sm text-stone-500 mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>
                 I got two cheesy bean and rice burritos with your name on it!
               </p>
@@ -687,7 +687,7 @@ function BetsView() {
               className="mt-4 px-6 py-2.5 bg-stone-900 text-stone-50 rounded-2xl text-sm hover:bg-stone-700 transition"
               style={{ fontFamily: 'Inter, sans-serif' }}
             >
-              {shoePopup === 'No' ? "We'll see about that" : "Let's go!"}
+              {shoePopup === 'Yes' ? "We'll see about that" : "Let's go!"}
             </button>
           </div>
         </div>
