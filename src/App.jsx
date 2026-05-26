@@ -1946,8 +1946,10 @@ function ShareLinksModal({ onClose }) {
     try {
       await navigator.clipboard.writeText(url);
       setCopied(key);
-      setTimeout(() => setCopied(null), 2000);
-    } catch {}
+    } catch {
+      setCopied(`${key}_err`);
+    }
+    setTimeout(() => setCopied(null), 2000);
   };
 
   return (
@@ -1997,13 +1999,13 @@ function ShareLinksModal({ onClose }) {
             <button
               onClick={() => copy(url, key)}
               className={`text-xs px-3 py-1 rounded-lg transition ${
-                copied === key
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-stone-900 text-stone-50 hover:bg-stone-700'
+                copied === key ? 'bg-emerald-600 text-white'
+                : copied === `${key}_err` ? 'bg-red-500 text-white'
+                : 'bg-stone-900 text-stone-50 hover:bg-stone-700'
               }`}
               style={{ fontFamily: 'Inter, sans-serif' }}
             >
-              {copied === key ? 'Copied!' : 'Copy'}
+              {copied === key ? 'Copied!' : copied === `${key}_err` ? 'Failed' : 'Copy'}
             </button>
           </div>
           <p
@@ -2032,11 +2034,13 @@ function ShareLinksModal({ onClose }) {
 }
 
 function Modal({ children, onClose }) {
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
   useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && onClose();
+    const onKey = (e) => e.key === 'Escape' && onCloseRef.current();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
 
   return (
     <div
