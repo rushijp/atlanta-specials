@@ -803,6 +803,24 @@ function BetsView() {
                           </button>
                         ))}
                       </div>
+                      {isRevealed && (() => {
+                        const correct = bets.correctAnswers[q.id];
+                        const gotIt = picks[q.id] === correct;
+                        return (
+                          <div className="mt-3 pt-3 border-t border-stone-200">
+                            <p className="text-xs mb-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                              <span className="text-stone-400">Answer: </span>
+                              <span className={`font-medium ${gotIt ? 'text-emerald-700' : 'text-stone-700'}`}>{correct}</span>
+                              {gotIt ? <span className="text-emerald-600 ml-1">✓</span> : <span className="text-rose-400 ml-1">✗</span>}
+                            </p>
+                            {q.id === 'q1' && <p className="text-xs text-stone-400 italic" style={{ fontFamily: 'Inter, sans-serif' }}>She is just stunning isn't she! I'm very lucky!</p>}
+                            {q.id === 'q7' && correct === 'Yes' && <p className="text-xs text-stone-400 italic" style={{ fontFamily: 'Inter, sans-serif' }}>It was Sahil I bet</p>}
+                            {q.id === 'q7' && correct === 'No' && <p className="text-xs text-stone-400 italic" style={{ fontFamily: 'Inter, sans-serif' }}>The boys locked in! 😎</p>}
+                            {q.id === 'q12' && correct === 'Yes' && <p className="text-xs text-stone-400 italic" style={{ fontFamily: 'Inter, sans-serif' }}>I'm broke ask my dad. He is semi-retired.</p>}
+                            {q.id === 'q12' && correct === 'No' && <p className="text-xs text-stone-400 italic" style={{ fontFamily: 'Inter, sans-serif' }}>Honestly surprised</p>}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
@@ -859,8 +877,8 @@ function BetsView() {
                         {myPick ? (
                           <>
                             <p className={`text-base italic font-medium ${isRight ? 'text-emerald-800' : isWrong ? 'text-rose-700 line-through' : 'text-stone-800'}`}>{myPick}</p>
-                            {isRight && <span className="text-emerald-600 text-sm font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>+{POINTS_PER_QUESTION}pts</span>}
-                            {isWrong && <span className="text-xs text-stone-500" style={{ fontFamily: 'Inter, sans-serif' }}>→ {correct}</span>}
+                            {isRight && <span className="text-emerald-600 text-sm font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>✓ +{POINTS_PER_QUESTION}pts</span>}
+                            {isWrong && <span className="text-xs text-stone-500" style={{ fontFamily: 'Inter, sans-serif' }}>✗ Answer: {correct}</span>}
                             {!correct && <span className="text-[10px] text-stone-300 uppercase tracking-wider" style={{ fontFamily: 'Inter, sans-serif' }}>Pending</span>}
                           </>
                         ) : (
