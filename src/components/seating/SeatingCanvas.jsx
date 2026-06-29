@@ -1185,6 +1185,43 @@ const VENUE_LAYOUTS = (() => {
       ],
     },
     {
+      name: 'Estate Tables + Stage (25 rounds)',
+      description: 'Stage/DJ at bottom, head table at top, 3 estate tables in U around stage, rounds on sides',
+      icon: '👑',
+      tables: [
+        // Head table at top (bride & groom face the room)
+        { name: 'Head Table', shape: 'head-table', capacity: 14, width: 400, height: 60, x: 1000, y: 100 },
+        // 3 estate tables in U-shape around stage at bottom
+        { name: 'Estate Left', shape: 'rectangle', capacity: 14, width: 80, height: 350, x: 750, y: 1500 },
+        { name: 'Estate Center', shape: 'rectangle', capacity: 16, width: 400, height: 70, x: 1000, y: 1900 },
+        { name: 'Estate Right', shape: 'rectangle', capacity: 14, width: 80, height: 350, x: 1570, y: 1500 },
+        // Left side rounds (2 cols × 5 rows = 10)
+        ...(() => {
+          const t = []; let n = 0;
+          for (let c = 0; c < 2; c++)
+            for (let r = 0; r < 5; r++)
+              t.push({ ...round10, name: `Table ${++n}`, x: 80 + c * 260, y: 300 + r * 260 });
+          return t;
+        })(),
+        // Right side rounds (2 cols × 5 rows = 10)
+        ...(() => {
+          const t = []; let n = 10;
+          for (let c = 0; c < 2; c++)
+            for (let r = 0; r < 5; r++)
+              t.push({ ...round10, name: `Table ${++n}`, x: 1750 + c * 260, y: 300 + r * 260 });
+          return t;
+        })(),
+        // 2 rounds flanking head table
+        { ...round8, name: 'Table 21', x: 550, y: 100 },
+        { ...round8, name: 'Table 22', x: 1550, y: 100 },
+      ],
+      zones: [
+        { type: 'stage', label: 'Stage / DJ', width: 400, height: 120, x: 1000, y: 2050, color: '#e0e7ff' },
+        { type: 'dancefloor', label: 'Dance Floor', width: 500, height: 450, x: 950, y: 600, color: '#fef3c7' },
+        { type: 'bar', label: 'Bar', width: 200, height: 70, x: 80, y: 1900, color: '#dbeafe' },
+      ],
+    },
+    {
       name: 'Ceremony — Mandap with Row Seating',
       description: 'Mandap at center, rows of chairs on both sides with center aisle',
       icon: '🔥',
