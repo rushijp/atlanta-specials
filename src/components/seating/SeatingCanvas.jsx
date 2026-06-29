@@ -387,6 +387,18 @@ export default function SeatingCanvas() {
               Layout Presets
             </Button>
 
+            {(tables.length > 0 || zones.length > 0) && (
+              <Button variant="outline" size="sm" onClick={() => {
+                if (window.confirm('Reset this layout? All tables and zones will be cleared.')) {
+                  setTables([]);
+                  setZones([]);
+                  setHasChanges(true);
+                }
+              }}>
+                <RotateCcw size={14} /> Reset
+              </Button>
+            )}
+
             <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
               <Upload size={14} /> Import
             </Button>
