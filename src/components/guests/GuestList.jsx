@@ -4,7 +4,7 @@ import { subscribeToGuests, addGuest, updateGuest, deleteGuest, deleteGuestsBatc
 import { subscribeToEvents } from '../../services/eventService';
 import { Button, Input, Badge, Modal } from '../ui';
 import { Search, Plus, Upload, Download, Trash2, Edit3, Filter, Users, ChevronDown } from 'lucide-react';
-import { parseFile, autoMapColumns, mapRowsToGuests, findDuplicates, exportGuestsToExcel } from '../../utils/excelImport';
+import { parseFile, autoMapColumns, mapRowsToGuests, findDuplicates, exportGuestsToExcel, downloadGuestTemplate } from '../../utils/excelImport';
 import { DIETARY_OPTIONS, SIDES, GUEST_TAGS, RSVP_STATUS } from '../../config/constants';
 
 export default function GuestList() {
@@ -110,6 +110,9 @@ export default function GuestList() {
 
         <Button onClick={() => setShowAddModal(true)}><Plus size={16} /> Add Guest</Button>
         <Button variant="outline" onClick={() => setShowImportModal(true)}><Upload size={16} /> Import</Button>
+        <Button variant="outline" onClick={downloadGuestTemplate}>
+          <Download size={16} /> Template
+        </Button>
         <Button variant="outline" onClick={() => exportGuestsToExcel(guests)}>
           <Download size={16} /> Export
         </Button>

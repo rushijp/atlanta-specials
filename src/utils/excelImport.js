@@ -167,3 +167,105 @@ export function exportGuestsToExcel(guests, fileName = 'guest-list.xlsx') {
   XLSX.utils.book_append_sheet(wb, ws, 'Guests');
   XLSX.writeFile(wb, fileName);
 }
+
+/**
+ * Download an Excel template with example data for guest import.
+ */
+export function downloadGuestTemplate() {
+  const exampleData = [
+    {
+      'First Name': 'Priya',
+      'Last Name': 'Sharma',
+      'Email': 'priya.sharma@email.com',
+      'Phone': '555-0101',
+      'Family': 'The Sharma Family',
+      'Side': 'Bride',
+      'Relation': 'Cousin',
+      'Dietary': 'Vegetarian',
+      'Table #': 1,
+      'Plus One': 'No',
+      'Tags': 'VIP',
+      'Notes': '',
+      'Hotel Needed': 'Yes',
+      'Traveling From': 'Mumbai',
+    },
+    {
+      'First Name': 'Raj',
+      'Last Name': 'Sharma',
+      'Email': 'raj.sharma@email.com',
+      'Phone': '555-0102',
+      'Family': 'The Sharma Family',
+      'Side': 'Bride',
+      'Relation': 'Uncle',
+      'Dietary': 'Vegetarian',
+      'Table #': 1,
+      'Plus One': 'Yes',
+      'Tags': 'VIP, Elderly',
+      'Notes': 'Needs wheelchair accessible seating',
+      'Hotel Needed': 'Yes',
+      'Traveling From': 'Mumbai',
+    },
+    {
+      'First Name': 'Anita',
+      'Last Name': 'Patel',
+      'Email': 'anita.p@email.com',
+      'Phone': '555-0201',
+      'Family': 'The Patel Family',
+      'Side': 'Groom',
+      'Relation': 'Family Friend',
+      'Dietary': 'Jain (No onion/garlic)',
+      'Table #': 3,
+      'Plus One': 'No',
+      'Tags': '',
+      'Notes': '',
+      'Hotel Needed': 'No',
+      'Traveling From': '',
+    },
+    {
+      'First Name': 'Vikram',
+      'Last Name': 'Mehta',
+      'Email': '',
+      'Phone': '555-0301',
+      'Family': 'The Mehta Family',
+      'Side': 'Groom',
+      'Relation': 'College Friend',
+      'Dietary': 'Non-Vegetarian',
+      'Table #': '',
+      'Plus One': 'Yes',
+      'Tags': 'College Friend',
+      'Notes': 'Coming with wife Neha',
+      'Hotel Needed': 'Yes',
+      'Traveling From': 'Chicago',
+    },
+    {
+      'First Name': 'Sita',
+      'Last Name': 'Reddy',
+      'Email': 'sita.r@email.com',
+      'Phone': '',
+      'Family': 'The Reddy Family',
+      'Side': 'Bride',
+      'Relation': 'Aunt',
+      'Dietary': 'Vegan',
+      'Table #': 2,
+      'Plus One': 'No',
+      'Tags': 'Elderly',
+      'Notes': 'Needs vegetarian + no dairy options',
+      'Hotel Needed': 'Yes',
+      'Traveling From': 'Hyderabad',
+    },
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(exampleData);
+
+  // Set column widths
+  ws['!cols'] = [
+    { wch: 14 }, { wch: 14 }, { wch: 24 }, { wch: 12 },
+    { wch: 20 }, { wch: 8 }, { wch: 16 }, { wch: 22 },
+    { wch: 8 }, { wch: 10 }, { wch: 18 }, { wch: 36 },
+    { wch: 14 }, { wch: 16 },
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Guest Template');
+  XLSX.writeFile(wb, 'phera-guest-template.xlsx');
+}
