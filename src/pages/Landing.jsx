@@ -14,8 +14,8 @@ export default function Landing() {
           <span className="text-xl font-display font-bold text-gray-900 tracking-tight">{APP_NAME}</span>
         </div>
         <div className="flex items-center gap-3">
-          <Link to="/login"><Button variant="ghost" className="link-flourish">Sign in</Button></Link>
-          <Link to="/register"><Button>Start Planning</Button></Link>
+          <Link to="/login"><Button variant="ghost" className="link-flourish" tabIndex={-1}>Sign in</Button></Link>
+          <Link to="/register"><Button tabIndex={-1}>Start Planning</Button></Link>
         </div>
       </header>
 
@@ -36,7 +36,7 @@ export default function Landing() {
         </p>
         <div className="flex items-center justify-center gap-4">
           <Link to="/register">
-            <Button size="lg" className="shadow-glow hover:scale-[1.02] transition-transform">
+            <Button size="lg" className="shadow-glow hover:scale-[1.02] transition-transform" tabIndex={-1}>
               Start Planning Free <ArrowRight size={16} />
             </Button>
           </Link>
@@ -182,7 +182,7 @@ export default function Landing() {
           <Sparkles className="mx-auto mb-4 text-phera-400" size={28} />
           <h2 className="text-3xl font-display font-bold text-white mb-3">Your wedding deserves better than spreadsheets</h2>
           <p className="text-wine-200 mb-8 text-lg">Start free. Plan everything in one place.</p>
-          <Link to="/register"><Button variant="secondary" size="lg" className="hover:scale-[1.02] transition-transform">Create Your Wedding <ArrowRight size={16} /></Button></Link>
+          <Link to="/register"><Button variant="secondary" size="lg" className="hover:scale-[1.02] transition-transform" tabIndex={-1}>Create Your Wedding <ArrowRight size={16} /></Button></Link>
         </div>
       </section>
 

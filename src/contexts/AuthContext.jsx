@@ -24,8 +24,13 @@ export function AuthProvider({ children }) {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
-        const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, firebaseUser.uid));
-        setUserProfile(profileDoc.exists() ? profileDoc.data() : null);
+        try {
+          const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, firebaseUser.uid));
+          setUserProfile(profileDoc.exists() ? profileDoc.data() : null);
+        } catch (err) {
+          console.error('Failed to load user profile:', err);
+          setUserProfile(null);
+        }
       } else {
         setUserProfile(null);
       }

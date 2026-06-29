@@ -6,24 +6,27 @@ import { Button, Card, Modal, Input } from '../components/ui';
 import { Plus, Users, Calendar, Grid3X3, Mail } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
-import { COLLECTIONS, EVENT_TEMPLATES } from '../config/constants';
+import { COLLECTIONS } from '../config/constants';
 import { subscribeToGuests } from '../services/guestService';
 import { subscribeToEvents } from '../services/eventService';
-import { subscribeToSeating } from '../services/seatingService';
+import { subscribeToRsvpSettings } from '../services/rsvpService';
 
 export default function Dashboard() {
-  const { user } = useAuth();
   const { activeWedding, weddings, loading } = useWedding();
   const [showCreate, setShowCreate] = useState(false);
   const [guests, setGuests] = useState([]);
   const [events, setEvents] = useState([]);
+  const [rsvpOpen, setRsvpOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!activeWedding) return;
     const unsub1 = subscribeToGuests(activeWedding.id, setGuests);
     const unsub2 = subscribeToEvents(activeWedding.id, setEvents);
-    return () => { unsub1(); unsub2(); };
+    const unsub3 = subscribeToRsvpSettings(activeWedding.id, (settings) => {
+      setRsvpOpen(settings?.isOpen || false);
+    });
+    return () => { unsub1(); unsub2(); unsub3(); };
   }, [activeWedding]);
 
   const guestCount = guests.length;
@@ -85,7 +88,7 @@ export default function Dashboard() {
             <ChecklistItem done={guestCount > 0} label="Import or add your guest list" />
             <ChecklistItem done={guestCount > 0 && events.some((e) => !e.inviteAll && (e.guestIds || []).length > 0)} label="Assign guests to events" />
             <ChecklistItem done={seatedCount > 0} label="Arrange seating for at least one event" />
-            <ChecklistItem done={activeWedding.settings?.rsvpOpen === true} label="Open RSVPs for guests" />
+            <ChecklistItem done={rsvpOpen} label="Open RSVPs for guests" />
           </div>
         </Card>
       </div>
@@ -148,10 +151,12 @@ function CreateWeddingModal({ open, onClose }) {
   const [name2, setName2] = useState('');
   const [date, setDate] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleCreate = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
     try {
       const slug = `${name1}-and-${name2}`.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
       await addDoc(collection(db, COLLECTIONS.WEDDINGS), {
@@ -160,13 +165,13 @@ function CreateWeddingModal({ open, onClose }) {
         coupleName2: name2,
         weddingDate: date || null,
         slug,
-        settings: { rsvpOpen: false, publicWebsite: false, theme: 'classic' },
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
       onClose();
     } catch (err) {
       console.error('Failed to create wedding:', err);
+      setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -175,6 +180,9 @@ function CreateWeddingModal({ open, onClose }) {
   return (
     <Modal open={open} onClose={onClose} title="Create Wedding">
       <form onSubmit={handleCreate} className="space-y-4">
+        {error && (
+          <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        )}
         <Input label="Partner 1 Name" value={name1} onChange={(e) => setName1(e.target.value)} placeholder="Brijal" required />
         <Input label="Partner 2 Name" value={name2} onChange={(e) => setName2(e.target.value)} placeholder="Rushi" required />
         <Input label="Wedding Date (optional)" type="date" value={date} onChange={(e) => setDate(e.target.value)} />

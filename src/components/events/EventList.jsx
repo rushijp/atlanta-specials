@@ -36,7 +36,12 @@ export default function EventList() {
 
   const handleDelete = async (eventId) => {
     if (!confirm('Delete this event? Guest assignments will be lost.')) return;
-    await deleteEvent(activeWedding.id, eventId);
+    try {
+      await deleteEvent(activeWedding.id, eventId);
+    } catch (err) {
+      console.error('Failed to delete event:', err);
+      alert('Failed to delete event. Please try again.');
+    }
   };
 
   if (!activeWedding) return null;

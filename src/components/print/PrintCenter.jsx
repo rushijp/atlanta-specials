@@ -167,8 +167,8 @@ export default function PrintCenter() {
         {/* Table Assignments */}
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
-              <Grid3X3 size={20} className="text-amber-600" />
+            <div className="w-10 h-10 rounded-lg bg-phera-50 flex items-center justify-center">
+              <Grid3X3 size={20} className="text-phera-600" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Table Assignments</h3>
@@ -196,8 +196,8 @@ export default function PrintCenter() {
         {/* Guest List */}
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-              <List size={20} className="text-blue-600" />
+            <div className="w-10 h-10 rounded-lg bg-wine-50 flex items-center justify-center">
+              <List size={20} className="text-wine-600" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Full Guest List</h3>

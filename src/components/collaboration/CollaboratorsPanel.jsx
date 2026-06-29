@@ -49,11 +49,21 @@ export default function CollaboratorsPanel() {
 
   const handleRemove = async (collabId) => {
     if (!confirm('Remove this collaborator?')) return;
-    await removeCollaborator(activeWedding.id, collabId);
+    try {
+      await removeCollaborator(activeWedding.id, collabId);
+    } catch (err) {
+      console.error('Failed to remove collaborator:', err);
+      alert('Failed to remove collaborator. Please try again.');
+    }
   };
 
   const handleRoleChange = async (collabId, newRole) => {
-    await updateCollaboratorRole(activeWedding.id, collabId, newRole);
+    try {
+      await updateCollaboratorRole(activeWedding.id, collabId, newRole);
+    } catch (err) {
+      console.error('Failed to update role:', err);
+      alert('Failed to update role. Please try again.');
+    }
   };
 
   const isOwner = activeWedding?.ownerId === user?.uid;

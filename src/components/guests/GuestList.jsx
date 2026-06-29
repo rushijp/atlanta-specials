@@ -63,8 +63,13 @@ export default function GuestList() {
 
   const handleBulkDelete = async () => {
     if (!confirm(`Delete ${selected.size} guests?`)) return;
-    await deleteGuestsBatch(activeWedding.id, [...selected]);
-    setSelected(new Set());
+    try {
+      await deleteGuestsBatch(activeWedding.id, [...selected]);
+      setSelected(new Set());
+    } catch (err) {
+      console.error('Bulk delete failed:', err);
+      alert('Failed to delete some guests. Please try again.');
+    }
   };
 
   if (!activeWedding) return null;
@@ -238,12 +243,17 @@ function GuestFormModal({ open, onClose, guest, weddingId, events }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isEdit) {
-      await updateGuest(weddingId, guest.id, form);
-    } else {
-      await addGuest(weddingId, form);
+    try {
+      if (isEdit) {
+        await updateGuest(weddingId, guest.id, form);
+      } else {
+        await addGuest(weddingId, form);
+      }
+      onClose();
+    } catch (err) {
+      console.error('Failed to save guest:', err);
+      alert('Failed to save guest. Please try again.');
     }
-    onClose();
   };
 
   const toggleTag = (tag) => {

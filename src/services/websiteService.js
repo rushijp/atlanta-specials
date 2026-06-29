@@ -15,7 +15,6 @@ function weddingDocRef(weddingId) {
 export async function saveWebsiteConfig(weddingId, config) {
   await updateDoc(weddingDocRef(weddingId), {
     ...config,
-    'settings.publicWebsite': Boolean(config.websitePublished),
     updatedAt: serverTimestamp(),
   });
 }

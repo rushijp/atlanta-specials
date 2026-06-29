@@ -26,7 +26,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-wine-50 to-amber-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-wine-50 to-ivory-100 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-wine-700 text-white font-bold text-xl mb-4">
@@ -35,18 +35,18 @@ export default function ForgotPassword() {
           <h1 className="text-2xl font-bold text-gray-900">{APP_NAME}</h1>
         </div>
 
-        <div className="rounded-2xl bg-white p-8 shadow-lg">
+        <div className="rounded-2xl bg-white/80 backdrop-blur-sm p-8 shadow-lg">
           {sent ? (
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                <span className="text-2xl">✉️</span>
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-wine-100">
+                <span className="text-2xl text-wine-700">✉</span>
               </div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">Check your email</h2>
               <p className="text-sm text-gray-500 mb-6">
                 We sent a password reset link to <strong>{email}</strong>
               </p>
-              <Link to="/login">
-                <Button variant="outline" className="w-full">Back to sign in</Button>
+              <Link to="/login" className="inline-block w-full">
+                <Button variant="outline" className="w-full" tabIndex={-1}>Back to sign in</Button>
               </Link>
             </div>
           ) : (
