@@ -1,13 +1,11 @@
-import { useState, useRef } from 'react';
-import { useDroppable } from '@dnd-kit/core';
-import { Trash2, Edit3, Settings } from 'lucide-react';
-import { Badge } from '../ui';
+import { useState, useRef, useCallback } from 'react';
+import { useDroppable, useDraggable } from '@dnd-kit/core';
+import { Trash2, Edit3, GripVertical } from 'lucide-react';
 
-export default function TableComponent({ table, guests, onUpdate, onRemove, onDrag, rules }) {
+export default function TableComponent({ table, guests, onUpdate, onRemove, onDrag }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(table.name);
   const [editCapacity, setEditCapacity] = useState(table.capacity);
-  const dragRef = useRef(null);
   const dragStart = useRef(null);
 
   const { setNodeRef, isOver } = useDroppable({ id: table.id });
@@ -17,12 +15,11 @@ export default function TableComponent({ table, guests, onUpdate, onRemove, onDr
     .filter(Boolean);
 
   const isOverCapacity = assignedGuests.length > table.capacity;
-  const fillPercent = Math.min(assignedGuests.length / table.capacity, 1);
 
-  // Table dragging (not DnD kit — we use native mouse events)
-  const handleMouseDown = (e) => {
-    if (e.target.closest('[data-no-drag]')) return;
+  // Table position dragging via dedicated handle
+  const handleGripMouseDown = useCallback((e) => {
     e.stopPropagation();
+    e.preventDefault();
     dragStart.current = { x: e.clientX, y: e.clientY };
 
     const handleMove = (me) => {
@@ -41,7 +38,7 @@ export default function TableComponent({ table, guests, onUpdate, onRemove, onDr
 
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', handleUp);
-  };
+  }, [onDrag]);
 
   const handleSaveEdit = () => {
     onUpdate({ name: editName, capacity: parseInt(editCapacity) || table.capacity });
@@ -54,6 +51,23 @@ export default function TableComponent({ table, guests, onUpdate, onRemove, onDr
     square: 'rounded-xl',
   };
 
+  // Compute chip positions around the table
+  const chipPositions = assignedGuests.map((guest, i) => {
+    const angle = (i / Math.max(assignedGuests.length, 1)) * 2 * Math.PI - Math.PI / 2;
+    const rx = table.width / 2 + 35;
+    const ry = table.height / 2 + 25;
+    const cx = table.width / 2;
+    const cy = table.height / 2;
+    return {
+      guest,
+      x: cx + rx * Math.cos(angle),
+      y: cy + ry * Math.sin(angle),
+      familyAtTable: guest.familyName && assignedGuests.some(
+        (g) => g.id !== guest.id && g.familyName === guest.familyName
+      ),
+    };
+  });
+
   return (
     <div
       ref={setNodeRef}
@@ -61,24 +75,28 @@ export default function TableComponent({ table, guests, onUpdate, onRemove, onDr
         position: 'absolute',
         left: table.x,
         top: table.y,
-        width: table.width,
-        height: table.height,
+        width: table.width + 80,
+        height: table.height + 60,
       }}
       className="group"
-      onMouseDown={handleMouseDown}
     >
-      {/* Table shape */}
+      {/* Table shape — centered within the larger hit area */}
       <div
+        style={{
+          position: 'absolute',
+          left: 40,
+          top: 30,
+          width: table.width,
+          height: table.height,
+        }}
         className={`
-          relative w-full h-full border-2 flex flex-col items-center justify-center cursor-move transition-colors
+          border-2 flex flex-col items-center justify-center transition-colors
           ${shapeStyles[table.shape]}
-          ${isOver ? 'border-rose-500 bg-rose-50 shadow-lg' : isOverCapacity ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white hover:border-gray-400'}
-          ${isOver ? 'ring-2 ring-rose-300' : ''}
+          ${isOver ? 'border-rose-500 bg-rose-50 shadow-lg ring-2 ring-rose-300' : isOverCapacity ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white hover:border-gray-400'}
         `}
       >
-        {/* Table name and count */}
         {isEditing ? (
-          <div data-no-drag className="flex flex-col items-center gap-1 p-1">
+          <div className="flex flex-col items-center gap-1 p-1" onMouseDown={(e) => e.stopPropagation()}>
             <input
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
@@ -104,49 +122,69 @@ export default function TableComponent({ table, guests, onUpdate, onRemove, onDr
             </span>
           </>
         )}
-
-        {/* Hover actions */}
-        <div data-no-drag className="absolute -top-8 left-1/2 -translate-x-1/2 hidden group-hover:flex gap-1 bg-white rounded-lg shadow-md border px-1 py-0.5">
-          <button onClick={() => { setEditName(table.name); setEditCapacity(table.capacity); setIsEditing(true); }} className="p-1 rounded hover:bg-gray-100" title="Edit">
-            <Edit3 size={12} className="text-gray-500" />
-          </button>
-          <button onClick={onRemove} className="p-1 rounded hover:bg-red-50" title="Remove">
-            <Trash2 size={12} className="text-red-500" />
-          </button>
-        </div>
       </div>
 
-      {/* Guest chips around the table */}
-      <div className="absolute inset-0 pointer-events-none">
-        {assignedGuests.map((guest, i) => {
-          const angle = (i / Math.max(assignedGuests.length, 1)) * 2 * Math.PI - Math.PI / 2;
-          const rx = table.width / 2 + 30;
-          const ry = table.height / 2 + 20;
-          const cx = table.width / 2;
-          const cy = table.height / 2;
-          const x = cx + rx * Math.cos(angle);
-          const y = cy + ry * Math.sin(angle);
-
-          // Check if guest has family members at same table
-          const familyAtTable = guest.familyName && assignedGuests.some(
-            (g) => g.id !== guest.id && g.familyName === guest.familyName
-          );
-
-          return (
-            <div
-              key={guest.id}
-              style={{ position: 'absolute', left: x - 28, top: y - 10 }}
-              className={`
-                pointer-events-auto text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap max-w-[60px] truncate font-medium
-                ${familyAtTable ? 'bg-amber-100 text-amber-800 ring-1 ring-amber-300' : 'bg-gray-100 text-gray-700'}
-              `}
-              title={`${guest.firstName} ${guest.lastName}${guest.familyName ? ` (${guest.familyName})` : ''}`}
-            >
-              {guest.firstName}
-            </div>
-          );
-        })}
+      {/* Hover actions — positioned above the table shape */}
+      <div className="absolute left-1/2 -translate-x-1/2 top-0 hidden group-hover:flex gap-1 bg-white rounded-lg shadow-md border px-1 py-0.5 z-10">
+        <button
+          onMouseDown={handleGripMouseDown}
+          className="p-1 rounded hover:bg-gray-100 cursor-move"
+          title="Move table"
+        >
+          <GripVertical size={12} className="text-gray-500" />
+        </button>
+        <button onClick={() => { setEditName(table.name); setEditCapacity(table.capacity); setIsEditing(true); }} className="p-1 rounded hover:bg-gray-100" title="Edit">
+          <Edit3 size={12} className="text-gray-500" />
+        </button>
+        <button onClick={onRemove} className="p-1 rounded hover:bg-red-50" title="Remove">
+          <Trash2 size={12} className="text-red-500" />
+        </button>
       </div>
+
+      {/* Guest chips around the table — each is draggable */}
+      {chipPositions.map(({ guest, x, y, familyAtTable }) => (
+        <SeatedGuestChip
+          key={guest.id}
+          guest={guest}
+          x={x}
+          y={y}
+          familyAtTable={familyAtTable}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SeatedGuestChip({ guest, x, y, familyAtTable }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: guest.id,
+    data: { fromTable: true },
+  });
+
+  const style = {
+    position: 'absolute',
+    left: x - 28,
+    top: y - 10,
+    ...(transform ? {
+      transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      zIndex: 1000,
+    } : {}),
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className={`
+        text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap max-w-[60px] truncate font-medium cursor-grab active:cursor-grabbing
+        ${isDragging ? 'opacity-50 ring-2 ring-rose-400' : ''}
+        ${familyAtTable ? 'bg-amber-100 text-amber-800 ring-1 ring-amber-300' : 'bg-gray-100 text-gray-700'}
+      `}
+      title={`${guest.firstName} ${guest.lastName}${guest.familyName ? ` (${guest.familyName})` : ''}`}
+    >
+      {guest.firstName}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { DndContext, DragOverlay, useSensor, useSensors, PointerSensor, closestCenter } from '@dnd-kit/core';
+import { DndContext, DragOverlay, useSensor, useSensors, PointerSensor, pointerWithin } from '@dnd-kit/core';
 import { useWedding } from '../../contexts/WeddingContext';
 import { subscribeToGuests } from '../../services/guestService';
 import { subscribeToEvents } from '../../services/eventService';
@@ -20,17 +20,14 @@ export default function SeatingCanvas() {
   const [tables, setTables] = useState([]);
   const [rules, setRules] = useState([]);
   const [zoom, setZoom] = useState(1);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [draggedGuest, setDraggedGuest] = useState(null);
   const [showAddTable, setShowAddTable] = useState(false);
   const [filterSide, setFilterSide] = useState('all');
   const [filterFamily, setFilterFamily] = useState('all');
   const [hasChanges, setHasChanges] = useState(false);
-  const [isPanning, setIsPanning] = useState(false);
-  const [panStart, setPanStart] = useState(null);
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   // Subscribe to data
   useEffect(() => {
@@ -167,37 +164,20 @@ export default function SeatingCanvas() {
     setHasChanges(true);
   };
 
-  // Canvas panning
-  const handleCanvasMouseDown = (e) => {
-    if (e.target === e.currentTarget || e.target.dataset.canvas) {
-      setIsPanning(true);
-      setPanStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
-    }
-  };
-
-  const handleCanvasMouseMove = (e) => {
-    if (isPanning && panStart) {
-      setOffset({ x: e.clientX - panStart.x, y: e.clientY - panStart.y });
-    }
-  };
-
-  const handleCanvasMouseUp = () => {
-    setIsPanning(false);
-    setPanStart(null);
-  };
-
-  // Table dragging (separate from guest DnD)
-  const handleTableDrag = (tableId, deltaX, deltaY) => {
-    updateTable(tableId, {
-      x: tables.find((t) => t.id === tableId).x + deltaX / zoom,
-      y: tables.find((t) => t.id === tableId).y + deltaY / zoom,
-    });
-  };
+  // Table position drag via grip handle
+  const handleTableDrag = useCallback((tableId, deltaX, deltaY) => {
+    setTables((prev) => prev.map((t) =>
+      t.id === tableId
+        ? { ...t, x: t.x + deltaX / zoom, y: t.y + deltaY / zoom }
+        : t
+    ));
+    setHasChanges(true);
+  }, [zoom]);
 
   if (!activeWedding) return null;
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex h-[calc(100vh-8rem)] gap-4">
         {/* Sidebar — unassigned guests */}
         <GuestSidebar
@@ -234,7 +214,7 @@ export default function SeatingCanvas() {
             <Button variant="outline" size="sm" onClick={() => setZoom((z) => Math.max(z - 0.1, 0.3))}>
               <ZoomOut size={14} />
             </Button>
-            <Button variant="outline" size="sm" onClick={() => { setZoom(1); setOffset({ x: 0, y: 0 }); }}>
+            <Button variant="outline" size="sm" onClick={() => setZoom(1)}>
               <RotateCcw size={14} />
             </Button>
 
@@ -257,11 +237,7 @@ export default function SeatingCanvas() {
 
           {/* Canvas */}
           <div
-            className="flex-1 rounded-xl border border-gray-200 bg-white overflow-hidden relative cursor-grab active:cursor-grabbing"
-            onMouseDown={handleCanvasMouseDown}
-            onMouseMove={handleCanvasMouseMove}
-            onMouseUp={handleCanvasMouseUp}
-            onMouseLeave={handleCanvasMouseUp}
+            className="flex-1 rounded-xl border border-gray-200 bg-white overflow-auto relative"
           >
             {events.length === 0 ? (
               <div className="flex items-center justify-center h-full text-gray-400">
@@ -277,13 +253,14 @@ export default function SeatingCanvas() {
               </div>
             ) : (
               <div
-                data-canvas="true"
                 style={{
-                  transform: `scale(${zoom}) translate(${offset.x / zoom}px, ${offset.y / zoom}px)`,
+                  transform: `scale(${zoom})`,
                   transformOrigin: '0 0',
                   width: '3000px',
                   height: '2000px',
                   position: 'relative',
+                  minWidth: '3000px',
+                  minHeight: '2000px',
                 }}
               >
                 {tables.map((table) => (
