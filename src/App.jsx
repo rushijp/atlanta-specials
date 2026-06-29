@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import PublicRSVP from './pages/PublicRSVP';
+import PublicWeddingWebsite from './pages/PublicWeddingWebsite';
 import Dashboard from './pages/Dashboard';
 import GuestManager from './pages/GuestManager';
 import EventManager from './pages/EventManager';
@@ -19,6 +20,14 @@ import PhotoGroupManager from './pages/PhotoGroupManager';
 import BetsManager from './pages/BetsManager';
 import WeddingWebsite from './pages/WeddingWebsite';
 import PrintExport from './pages/PrintExport';
+import {
+  PublicPhotoGroupQueue,
+  PhotoGroupDisplayView,
+} from './components/photos/PhotoGroupManager';
+import {
+  PublicBetsManager,
+  BetsLeaderboardView,
+} from './components/bets/BetsManager';
 
 export default function App() {
   return (
@@ -31,6 +40,11 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/rsvp/:weddingId" element={<PublicRSVP />} />
+          <Route path="/w/:weddingId" element={<PublicWeddingWebsite />} />
+          <Route path="/photos/:weddingId" element={<PublicPhotoGroupQueue />} />
+          <Route path="/photos/:weddingId/display" element={<PhotoGroupDisplayView />} />
+          <Route path="/bets/:weddingId" element={<PublicBetsManager />} />
+          <Route path="/bets/:weddingId/leaderboard" element={<BetsLeaderboardView />} />
 
           {/* Protected app routes */}
           <Route

@@ -131,17 +131,22 @@ export default function TableComponent({ table, guests, onUpdate, onRemove, onDr
     custom: 'rounded-xl',
   };
 
-  const chipPositions = assignedGuests.map((guest, i) => {
-    const angle = (i / Math.max(assignedGuests.length, 1)) * 2 * Math.PI - Math.PI / 2;
-    const rx = table.width / 2 + 35;
-    const ry = table.height / 2 + 25;
+  // Compute chair positions around the table edge based on capacity
+  const chairSize = 16; // px diameter of chair circle
+  const chairGap = 6;   // gap between table edge and chair
+  const chairPositions = Array.from({ length: table.capacity }, (_, i) => {
+    const angle = (i / table.capacity) * 2 * Math.PI - Math.PI / 2;
+    const rx = table.width / 2 + chairGap + chairSize / 2;
+    const ry = table.height / 2 + chairGap + chairSize / 2;
     const cx = table.width / 2;
     const cy = table.height / 2;
+    // Match chair to guest by index
+    const guest = assignedGuests[i] || null;
     return {
-      guest,
       x: cx + rx * Math.cos(angle),
       y: cy + ry * Math.sin(angle),
-      familyAtTable: guest.familyName && assignedGuests.some(
+      guest,
+      familyAtTable: guest?.familyName && assignedGuests.some(
         (g) => g.id !== guest.id && g.familyName === guest.familyName
       ),
     };
@@ -358,50 +363,91 @@ export default function TableComponent({ table, guests, onUpdate, onRemove, onDr
         </button>
       </div>
 
-      {/* Guest chips around the table */}
-      {chipPositions.map(({ guest, x, y, familyAtTable }) => (
-        <SeatedGuestChip
-          key={guest.id}
-          guest={guest}
-          x={x}
-          y={y}
-          familyAtTable={familyAtTable}
+      {/* Chair circles around the table + seated guest labels */}
+      {chairPositions.map((chair, i) => (
+        <ChairSeat
+          key={chair.guest ? chair.guest.id : `empty-${i}`}
+          chair={chair}
+          index={i}
+          chairSize={chairSize}
         />
       ))}
     </div>
   );
 }
 
-function SeatedGuestChip({ guest, x, y, familyAtTable }) {
+// Individual chair circle — empty or filled with draggable guest
+function ChairSeat({ chair, index, chairSize }) {
+  const { guest, x, y, familyAtTable } = chair;
+  const half = chairSize / 2;
+
+  if (!guest) {
+    // Empty chair
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          left: x - half + 40,  // offset for table padding
+          top: y - half + 30,
+          width: chairSize,
+          height: chairSize,
+        }}
+        className="rounded-full border border-gray-300 bg-gray-50"
+        title={`Seat ${index + 1} — empty`}
+      />
+    );
+  }
+
+  // Filled chair — draggable
+  return <SeatedGuestChip guest={guest} x={x} y={y} familyAtTable={familyAtTable} chairSize={chairSize} />;
+}
+
+function SeatedGuestChip({ guest, x, y, familyAtTable, chairSize }) {
+  const half = chairSize / 2;
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: guest.id,
     data: { fromTable: true },
   });
 
-  const style = {
-    position: 'absolute',
-    left: x - 28,
-    top: y - 10,
-    ...(transform ? {
-      transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      zIndex: 1000,
-    } : {}),
-  };
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className={`
-        text-[10px] px-1.5 py-0.5 rounded-full whitespace-nowrap max-w-[60px] truncate font-medium cursor-grab active:cursor-grabbing
-        ${isDragging ? 'opacity-50 ring-2 ring-rose-400' : ''}
-        ${familyAtTable ? 'bg-amber-100 text-amber-800 ring-1 ring-amber-300' : 'bg-gray-100 text-gray-700'}
-      `}
-      title={`${guest.firstName} ${guest.lastName}${guest.familyName ? ` (${guest.familyName})` : ''}`}
-    >
-      {guest.firstName}
-    </div>
+    <>
+      {/* Chair circle (filled) */}
+      <div
+        ref={setNodeRef}
+        {...listeners}
+        {...attributes}
+        style={{
+          position: 'absolute',
+          left: x - half + 40,
+          top: y - half + 30,
+          width: chairSize,
+          height: chairSize,
+          ...(transform ? {
+            transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+            zIndex: 1000,
+          } : {}),
+        }}
+        className={`
+          rounded-full cursor-grab active:cursor-grabbing transition-colors
+          ${isDragging ? 'ring-2 ring-rose-400 opacity-70' : ''}
+          ${familyAtTable ? 'bg-amber-400 border-2 border-amber-500' : 'bg-rose-400 border-2 border-rose-500'}
+        `}
+        title={`${guest.firstName} ${guest.lastName}${guest.familyName ? ` (${guest.familyName})` : ''} — ${guest.dietary || 'no dietary'}`}
+      />
+      {/* Name label — outside the chair, not draggable */}
+      {!isDragging && (
+        <div
+          style={{
+            position: 'absolute',
+            left: x + half + 42,
+            top: y - 4 + 30,
+            pointerEvents: 'none',
+          }}
+          className="text-[9px] font-medium text-gray-600 whitespace-nowrap"
+        >
+          {guest.firstName}
+        </div>
+      )}
+    </>
   );
 }
