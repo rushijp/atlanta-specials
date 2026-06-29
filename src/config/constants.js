@@ -1,7 +1,7 @@
 // App-wide constants
 
 export const APP_NAME = 'Phera';
-export const APP_TAGLINE = 'Your Indian Wedding, Beautifully Planned';
+export const APP_TAGLINE = 'Indian Wedding Planning, Done Right';
 
 // Firestore collection paths
 export const COLLECTIONS = {
@@ -17,14 +17,14 @@ export const COLLECTIONS = {
 
 // Indian wedding event templates
 export const EVENT_TEMPLATES = [
-  { name: 'Mehndi', icon: '🌿', defaultDressCode: 'Colorful / Traditional' },
-  { name: 'Sangeet', icon: '🎶', defaultDressCode: 'Semi-formal / Festive' },
-  { name: 'Haldi', icon: '💛', defaultDressCode: 'Yellow / White' },
-  { name: 'Garba', icon: '💃', defaultDressCode: 'Chaniya Choli / Kurta' },
-  { name: 'Baraat', icon: '🐴', defaultDressCode: 'Formal Indian' },
-  { name: 'Wedding Ceremony', icon: '🔥', defaultDressCode: 'Formal Indian Attire' },
-  { name: 'Reception', icon: '🎉', defaultDressCode: 'Formal / Cocktail' },
-  { name: 'Vidaai', icon: '🙏', defaultDressCode: 'Formal Indian' },
+  { name: 'Mehndi', defaultDressCode: 'Colorful / Traditional' },
+  { name: 'Sangeet', defaultDressCode: 'Semi-formal / Festive' },
+  { name: 'Haldi', defaultDressCode: 'Yellow / White' },
+  { name: 'Garba', defaultDressCode: 'Chaniya Choli / Kurta' },
+  { name: 'Baraat', defaultDressCode: 'Formal Indian' },
+  { name: 'Wedding Ceremony', defaultDressCode: 'Formal Indian Attire' },
+  { name: 'Reception', defaultDressCode: 'Formal / Cocktail' },
+  { name: 'Vidaai', defaultDressCode: 'Formal Indian' },
 ];
 
 // Table configurations for seating — fully modular
@@ -40,16 +40,16 @@ export const TABLE_SHAPES = {
 };
 
 export const TABLE_PRESETS = [
-  { shape: 'round',      label: 'Round',          icon: '⭕', capacity: 10, width: 120, height: 120 },
-  { shape: 'round',      label: 'Round (Small)',   icon: '⭕', capacity: 6,  width: 90,  height: 90 },
-  { shape: 'round',      label: 'Round (Large)',   icon: '⭕', capacity: 12, width: 140, height: 140 },
-  { shape: 'rectangle',  label: 'Estate Table',   icon: '▬',  capacity: 8,  width: 160, height: 80 },
-  { shape: 'rectangle',  label: 'Long Estate',     icon: '▬',  capacity: 16, width: 280, height: 70 },
-  { shape: 'square',     label: 'Square (4-top)',  icon: '◻',  capacity: 4,  width: 90,  height: 90 },
-  { shape: 'oval',       label: 'Oval',            icon: '⬭',  capacity: 10, width: 180, height: 100 },
-  { shape: 'u-shape',    label: 'U-Shape',         icon: '⊔',  capacity: 18, width: 240, height: 140 },
-  { shape: 'head-table', label: 'Head Table',      icon: '━',  capacity: 12, width: 300, height: 60 },
-  { shape: 'cocktail',   label: 'Cocktail/Standing', icon: '●', capacity: 4,  width: 60,  height: 60 },
+  { shape: 'round',      label: 'Round',             capacity: 10, width: 120, height: 120 },
+  { shape: 'round',      label: 'Round (Small)',     capacity: 6,  width: 90,  height: 90 },
+  { shape: 'round',      label: 'Round (Large)',     capacity: 12, width: 140, height: 140 },
+  { shape: 'rectangle',  label: 'Estate Table',     capacity: 8,  width: 160, height: 80 },
+  { shape: 'rectangle',  label: 'Long Estate',      capacity: 16, width: 280, height: 70 },
+  { shape: 'square',     label: 'Square (4-top)',   capacity: 4,  width: 90,  height: 90 },
+  { shape: 'oval',       label: 'Oval',             capacity: 10, width: 180, height: 100 },
+  { shape: 'u-shape',    label: 'U-Shape',          capacity: 18, width: 240, height: 140 },
+  { shape: 'head-table', label: 'Head Table',       capacity: 12, width: 300, height: 60 },
+  { shape: 'cocktail',   label: 'Cocktail/Standing', capacity: 4,  width: 60,  height: 60 },
 ];
 
 // Legacy defaults for backward compat

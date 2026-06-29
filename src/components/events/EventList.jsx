@@ -42,7 +42,7 @@ export default function EventList() {
                 }}
                 className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700 transition-colors"
               >
-                <span>{tmpl.icon}</span> {tmpl.name}
+                <span>{tmpl.name}</span>
               </button>
             ))}
           </div>
@@ -164,7 +164,7 @@ function EventFormModal({ open, onClose, event, prefill, weddingId, eventCount }
                     form.name === t.name ? 'bg-rose-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {t.icon} {t.name}
+                  {t.name}
                 </button>
               ))}
             </div>

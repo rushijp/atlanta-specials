@@ -6,7 +6,7 @@ import { subscribeToGuests } from '../../services/guestService';
 import { subscribeToEvents } from '../../services/eventService';
 import { subscribeToSeating, saveSeating } from '../../services/seatingService';
 import { Button, Modal } from '../ui';
-import { Plus, ZoomIn, ZoomOut, RotateCcw, Save, Upload, Image, FileSpreadsheet, QrCode, AlertTriangle, Copy, Check, ShieldAlert } from 'lucide-react';
+import { Plus, ZoomIn, ZoomOut, RotateCcw, Save, Upload, Image, FileSpreadsheet, QrCode, AlertTriangle, Copy, Check, ShieldAlert, Grid3X3, Circle, Square, Minus } from 'lucide-react';
 import { TABLE_DEFAULTS, TABLE_PRESETS } from '../../config/constants';
 import TableComponent from './Table';
 import GuestSidebar from './GuestSidebar';
@@ -566,7 +566,7 @@ export default function SeatingCanvas() {
                 onClick={() => addTable(preset)}
                 className="flex items-center gap-2 rounded-xl border border-gray-200 p-3 hover:bg-rose-50 hover:border-rose-200 transition-colors text-left"
               >
-                <span className="text-xl flex-shrink-0">{preset.icon}</span>
+                <TableShapeIcon shape={preset.shape} />
                 <div>
                   <div className="text-sm font-medium text-gray-900">{preset.label}</div>
                   <div className="text-xs text-gray-400">{preset.capacity} seats · {preset.width}×{preset.height}</div>
@@ -914,16 +914,16 @@ function Grid3XIcon() {
 // ─── Zone presets ───────────────────────────────────────────────────────────
 
 const ZONE_PRESETS = [
-  { type: 'dancefloor', label: 'Dance Floor', icon: '💃', width: 250, height: 250, color: '#fef3c7' },
-  { type: 'dj',         label: 'DJ Booth',    icon: '🎧', width: 100, height: 60,  color: '#e0e7ff' },
-  { type: 'bar',        label: 'Bar',         icon: '🍸', width: 160, height: 60,  color: '#dbeafe' },
-  { type: 'gifts',      label: 'Gifts & Cards', icon: '🎁', width: 100, height: 80, color: '#fce7f3' },
-  { type: 'desserts',   label: 'Desserts',    icon: '🍰', width: 120, height: 60,  color: '#fef9c3' },
-  { type: 'cake',       label: 'Cake',        icon: '🎂', width: 80,  height: 80,  color: '#fff7ed' },
-  { type: 'stage',      label: 'Stage / Mandap', icon: '🔥', width: 300, height: 150, color: '#fee2e2' },
-  { type: 'photo',      label: 'Photo Booth', icon: '📸', width: 100, height: 80,  color: '#f3e8ff' },
-  { type: 'entrance',   label: 'Entrance',    icon: '🚪', width: 80,  height: 40,  color: '#f1f5f9' },
-  { type: 'custom',     label: 'Custom Zone',  icon: '📐', width: 150, height: 100, color: '#f3f4f6' },
+  { type: 'dancefloor', label: 'Dance Floor', icon: 'DF', width: 250, height: 250, color: '#fef3c7' },
+  { type: 'dj',         label: 'DJ Booth',    icon: 'DJ', width: 100, height: 60,  color: '#e0e7ff' },
+  { type: 'bar',        label: 'Bar',         icon: 'B',  width: 160, height: 60,  color: '#dbeafe' },
+  { type: 'gifts',      label: 'Gifts & Cards', icon: 'G', width: 100, height: 80, color: '#fce7f3' },
+  { type: 'desserts',   label: 'Desserts',    icon: 'D',  width: 120, height: 60,  color: '#fef9c3' },
+  { type: 'cake',       label: 'Cake',        icon: 'C',  width: 80,  height: 80,  color: '#fff7ed' },
+  { type: 'stage',      label: 'Stage / Mandap', icon: 'S', width: 300, height: 150, color: '#fee2e2' },
+  { type: 'photo',      label: 'Photo Booth', icon: 'PB', width: 100, height: 80,  color: '#f3e8ff' },
+  { type: 'entrance',   label: 'Entrance',    icon: 'E',  width: 80,  height: 40,  color: '#f1f5f9' },
+  { type: 'custom',     label: 'Custom Zone',  icon: '+',  width: 150, height: 100, color: '#f3f4f6' },
 ];
 
 // ─── Zone element (non-seatable, draggable) ─────────────────────────────────
@@ -1272,6 +1272,19 @@ const VENUE_LAYOUTS = (() => {
   ];
 })();
 
+// Small shape indicator for table presets (replaces emojis)
+function TableShapeIcon({ shape }) {
+  const base = "w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center bg-gray-100";
+  switch (shape) {
+    case 'round': return <div className={base}><Circle size={16} className="text-gray-500" /></div>;
+    case 'rectangle': return <div className={base}><Minus size={16} className="text-gray-500" /></div>;
+    case 'square': return <div className={base}><Square size={14} className="text-gray-500" /></div>;
+    case 'oval': return <div className={base}><Circle size={16} className="text-gray-500 scale-x-150" /></div>;
+    case 'head-table': return <div className={base}><Minus size={18} className="text-gray-500" /></div>;
+    default: return <div className={base}><Grid3X3 size={14} className="text-gray-500" /></div>;
+  }
+}
+
 function VenuePresetsPanel({ onApply, onClose }) {
   return (
     <div className="space-y-3">
@@ -1291,7 +1304,9 @@ function VenuePresetsPanel({ onApply, onClose }) {
             }}
             className="flex items-start gap-3 rounded-xl border border-gray-200 p-4 hover:bg-rose-50 hover:border-rose-200 transition-colors text-left"
           >
-            <span className="text-3xl flex-shrink-0">{layout.icon}</span>
+            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-wine-50 flex items-center justify-center">
+              <Grid3X3 size={18} className="text-wine-700" />
+            </div>
             <div>
               <div className="text-sm font-semibold text-gray-900">{layout.name}</div>
               <div className="text-xs text-gray-500 mt-0.5">{layout.description}</div>

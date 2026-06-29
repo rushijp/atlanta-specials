@@ -159,7 +159,7 @@ export default function PublicRSVP() {
 
   // ─── Loading / Error / Closed states ─────────────────────────────
   if (loading) {
-    return <CenteredPage><div className="animate-pulse text-rose-600 text-lg">Loading...</div></CenteredPage>;
+    return <CenteredPage><div className="animate-pulse text-wine-700 text-lg">Loading...</div></CenteredPage>;
   }
   if (error && !weddingData) {
     return <CenteredPage><p className="text-red-600 text-lg mb-2">{error}</p><p className="text-gray-500 text-sm">This link may be invalid or expired.</p></CenteredPage>;
@@ -167,7 +167,7 @@ export default function PublicRSVP() {
   if (settings.isOpen === false) {
     return (
       <CenteredPage>
-        <Heart className="mx-auto text-rose-400 mb-4" size={48} />
+        <Heart className="mx-auto text-wine-400 mb-4" size={48} />
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{wedding.coupleName}</h1>
         <p className="text-gray-600">RSVPs are currently closed.</p>
       </CenteredPage>
@@ -175,10 +175,10 @@ export default function PublicRSVP() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-amber-50">
+    <div className="min-h-screen bg-gradient-to-br from-wine-50 via-white to-amber-50">
       {/* Header */}
       <header className="text-center pt-10 pb-6 px-4">
-        <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3">
+        <div className="w-12 h-12 rounded-full bg-wine-100 text-wine-700 flex items-center justify-center mx-auto mb-3">
           <Heart size={24} />
         </div>
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{wedding.coupleName || 'Wedding RSVP'}</h1>
@@ -186,7 +186,7 @@ export default function PublicRSVP() {
           <p className="text-gray-600 mt-2 max-w-lg mx-auto leading-relaxed">{settings.customMessage}</p>
         )}
         {settings.deadline && (
-          <p className="text-sm text-rose-600 mt-2 font-medium">
+          <p className="text-sm text-wine-700 mt-2 font-medium">
             Please respond by {new Date(settings.deadline).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
         )}
@@ -210,11 +210,11 @@ export default function PublicRSVP() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   placeholder="First name, last name, or phone..."
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-100 transition-all"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm focus:border-wine-600 focus:ring-2 focus:ring-wine-100 transition-all"
                   autoFocus
                 />
               </div>
-              <button onClick={handleSearch} className="px-5 py-3 bg-rose-600 text-white rounded-xl text-sm font-medium hover:bg-rose-700 transition-colors flex-shrink-0">
+              <button onClick={handleSearch} className="px-5 py-3 bg-wine-700 text-white rounded-xl text-sm font-medium hover:bg-wine-800 transition-colors flex-shrink-0">
                 Search
               </button>
             </div>
@@ -226,9 +226,9 @@ export default function PublicRSVP() {
                   <button
                     key={(familyName || '') + members[0].id}
                     onClick={() => handleSelectGuest(members[0])}
-                    className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 hover:bg-rose-50 hover:border-rose-300 transition-all"
+                    className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 hover:bg-wine-50 hover:border-wine-300 transition-all"
                   >
-                    <div className="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-wine-100 text-wine-700 flex items-center justify-center flex-shrink-0">
                       {members.length > 1 ? <Users size={18} /> : <span className="text-sm font-bold">{members[0].firstName[0]}</span>}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -260,7 +260,7 @@ export default function PublicRSVP() {
             {/* Back button */}
             <button
               onClick={() => { setStep('search'); setSearchResults([]); setSearchQuery(''); }}
-              className="text-sm text-rose-600 hover:text-rose-700 font-medium"
+              className="text-sm text-wine-700 hover:text-wine-800 font-medium"
             >
               ← Search again
             </button>
@@ -366,7 +366,7 @@ export default function PublicRSVP() {
                       <select
                         value={dietaryChoices[guest.id] || 'vegetarian'}
                         onChange={(e) => setDietaryChoices((prev) => ({ ...prev, [guest.id]: e.target.value }))}
-                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-rose-500"
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-wine-600"
                       >
                         {DIETARY_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -389,7 +389,7 @@ export default function PublicRSVP() {
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Congratulations! We can't wait to celebrate with you..."
                   rows={3}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
+                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-wine-600 focus:ring-2 focus:ring-wine-100"
                 />
               </RsvpCard>
             )}
@@ -399,7 +399,7 @@ export default function PublicRSVP() {
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="w-full py-4 bg-rose-600 text-white rounded-2xl font-semibold hover:bg-rose-700 transition-colors disabled:opacity-50 shadow-sm"
+              className="w-full py-4 bg-wine-700 text-white rounded-2xl font-semibold hover:bg-wine-800 transition-colors disabled:opacity-50 shadow-sm"
             >
               {submitting ? 'Submitting...' : 'Submit RSVP'}
             </button>
@@ -442,7 +442,7 @@ export default function PublicRSVP() {
 
             <button
               onClick={() => { setStep('search'); setSearchQuery(''); setSearchResults([]); setSelectedFamily([]); setMessage(''); }}
-              className="text-sm text-rose-600 hover:text-rose-700 font-medium"
+              className="text-sm text-wine-700 hover:text-wine-800 font-medium"
             >
               RSVP for another family →
             </button>
@@ -461,7 +461,7 @@ export default function PublicRSVP() {
 
 function CenteredPage({ children }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 to-amber-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-wine-50 to-amber-50 px-4">
       <div className="text-center max-w-md">{children}</div>
     </div>
   );

@@ -39,7 +39,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-rose-600 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-wine-700 border-t-transparent" />
       </div>
     );
   }
@@ -49,29 +49,29 @@ export default function Dashboard() {
   }
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-display font-bold text-gray-900">
           {activeWedding.coupleName1} & {activeWedding.coupleName2}
         </h1>
-        <p className="text-sm text-gray-500 mt-1">Wedding Dashboard</p>
+        <p className="text-sm text-gray-400 mt-1">Your wedding at a glance</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <QuickStat icon={Users} label="Guests" value={guestCount} to="/guests" />
         <QuickStat icon={Calendar} label="Events" value={eventCount} to="/events" />
         <QuickStat icon={Grid3X3} label="Seated" value={seatedCount} to="/seating" />
-        <QuickStat icon={Mail} label="RSVPs" value={`${rsvpRate}%`} to="/rsvp" />
+        <QuickStat icon={Mail} label="RSVP Rate" value={`${rsvpRate}%`} to="/rsvp" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="Quick Actions">
-          <div className="space-y-2">
+        <Card title="Jump to">
+          <div className="space-y-1">
             <Button variant="ghost" className="w-full justify-start" onClick={() => navigate('/guests')}>
-              <Users size={18} /> Manage Guest List
+              <Users size={18} /> Guest List
             </Button>
             <Button variant="ghost" className="w-full justify-start" onClick={() => navigate('/events')}>
-              <Calendar size={18} /> Add Events
+              <Calendar size={18} /> Events
             </Button>
             <Button variant="ghost" className="w-full justify-start" onClick={() => navigate('/seating')}>
               <Grid3X3 size={18} /> Seating Chart
@@ -79,13 +79,13 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card title="Getting Started">
+        <Card title="Setup checklist">
           <div className="space-y-3">
             <ChecklistItem done={eventCount > 0} label="Add your events (Mehndi, Sangeet, Ceremony, etc.)" />
             <ChecklistItem done={guestCount > 0} label="Import or add your guest list" />
             <ChecklistItem done={guestCount > 0 && events.some((e) => !e.inviteAll && (e.guestIds || []).length > 0)} label="Assign guests to events" />
-            <ChecklistItem done={seatedCount > 0} label="Set up seating chart" />
-            <ChecklistItem done={activeWedding.settings?.rsvpOpen === true} label="Open RSVP for guests" />
+            <ChecklistItem done={seatedCount > 0} label="Arrange seating for at least one event" />
+            <ChecklistItem done={activeWedding.settings?.rsvpOpen === true} label="Open RSVPs for guests" />
           </div>
         </Card>
       </div>
@@ -100,14 +100,14 @@ function QuickStat({ icon: Icon, label, value, to }) {
   return (
     <button
       onClick={() => navigate(to)}
-      className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow text-left"
+      className="flex items-center gap-4 rounded-xl border border-gray-200/80 bg-white p-4 shadow-soft hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50">
-        <Icon size={20} className="text-rose-600" />
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-wine-50">
+        <Icon size={20} className="text-wine-700" />
       </div>
       <div>
         <p className="text-2xl font-bold text-gray-900">{value}</p>
-        <p className="text-xs text-gray-500">{label}</p>
+        <p className="text-xs text-gray-400">{label}</p>
       </div>
     </button>
   );
@@ -126,13 +126,13 @@ function ChecklistItem({ done, label }) {
 
 function CreateWeddingPrompt({ onOpen, showModal, onClose }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-100">
-        <span className="text-3xl">💍</span>
+    <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
+      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-wine-100 to-phera-100">
+        <Calendar size={28} className="text-wine-700" />
       </div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Let's plan your wedding!</h2>
+      <h2 className="text-2xl font-display font-bold text-gray-900 mb-2">Let's get started</h2>
       <p className="text-gray-500 mb-6 max-w-md">
-        Create your first wedding to get started with guest management, seating charts, RSVP tracking, and more.
+        Create your wedding to start managing guests, events, seating, and RSVPs in one place.
       </p>
       <Button onClick={onOpen}>
         <Plus size={18} /> Create Wedding
