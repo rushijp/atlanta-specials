@@ -1,0 +1,9 @@
+{
+  "universe": "NBA All-Time",
+  "agents": [
+    { "name": "LeBron", "role": "Lead / Architect", "status": "active" },
+    { "name": "Curry", "role": "Frontend Engineer", "status": "active" },
+    { "name": "Jokic", "role": "Backend Engineer", "status": "active" },
+    { "name": "Kawhi", "role": "Quality Engineer", "status": "active" }
+  ]
+}
