@@ -57,23 +57,32 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
 
   const handleGripMouseDown = useCallback((e) => {
     e.stopPropagation();
-    e.preventDefault();
-    dragStart.current = { x: e.clientX, y: e.clientY };
+    const startPos = { x: e.clientX, y: e.clientY };
+    let moved = false;
 
     const handleMove = (me) => {
-      if (!dragStart.current) return;
-      const dx = me.clientX - dragStart.current.x;
-      const dy = me.clientY - dragStart.current.y;
+      const dx = me.clientX - startPos.x;
+      const dy = me.clientY - startPos.y;
+      if (!moved && Math.abs(dx) < 4 && Math.abs(dy) < 4) return; // threshold before dragging
+      moved = true;
+      const prevX = dragStart.current?.x || startPos.x;
+      const prevY = dragStart.current?.y || startPos.y;
       dragStart.current = { x: me.clientX, y: me.clientY };
-      onDrag(dx, dy);
+      onDrag(me.clientX - prevX, me.clientY - prevY);
     };
 
-    const handleUp = () => {
+    const handleUp = (ue) => {
       dragStart.current = null;
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('mouseup', handleUp);
+      // If we moved, suppress the click that follows
+      if (moved) {
+        const suppress = (ce) => { ce.stopPropagation(); ce.preventDefault(); };
+        ue.target.addEventListener('click', suppress, { once: true, capture: true });
+      }
     };
 
+    dragStart.current = startPos;
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', handleUp);
   }, [onDrag]);
@@ -175,10 +184,11 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
           height: table.height,
         }}
         className={`
-          border-2 flex flex-col items-center justify-center transition-colors cursor-pointer
+          border-2 flex flex-col items-center justify-center transition-colors cursor-grab active:cursor-grabbing
           ${shapeStyles[table.shape]}
           ${isOver ? 'border-rose-500 bg-rose-50 shadow-lg ring-2 ring-rose-300' : isOverCapacity ? 'border-red-400 bg-red-50' : hasWarnings ? 'border-amber-400 bg-amber-50 ring-1 ring-amber-200' : showGuestPanel ? 'border-rose-400 bg-rose-50/50 ring-1 ring-rose-200' : 'border-gray-300 bg-white hover:border-gray-400'}
         `}
+        onMouseDown={handleGripMouseDown}
         onClick={handleTableClick}
         onDoubleClick={(e) => { e.stopPropagation(); startEdit(); }}
       >
