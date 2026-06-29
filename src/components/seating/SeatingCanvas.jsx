@@ -1114,19 +1114,19 @@ const VENUE_LAYOUTS = (() => {
       ],
     },
     {
-      name: 'Banquet Hall (mixed)',
-      description: 'Long banquet + round tables on left/right, dance floor center, stage opposite head table',
+      name: 'Estate Hall (mixed)',
+      description: 'Long estate + round tables on left/right, dance floor center, stage opposite head table',
       icon: '🍽️',
       tables: [
         { name: 'Head Table', shape: 'head-table', capacity: 14, width: 360, height: 60, x: 1000, y: 1500 },
-        // Left side: 3 long banquet tables
-        { name: 'Banquet 1', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 100, y: 350 },
-        { name: 'Banquet 2', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 100, y: 600 },
-        { name: 'Banquet 3', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 100, y: 850 },
-        // Right side: 3 long banquet tables
-        { name: 'Banquet 4', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 1900, y: 350 },
-        { name: 'Banquet 5', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 1900, y: 600 },
-        { name: 'Banquet 6', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 1900, y: 850 },
+        // Left side: 3 long estate tables
+        { name: 'Estate 1', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 100, y: 350 },
+        { name: 'Estate 2', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 100, y: 600 },
+        { name: 'Estate 3', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 100, y: 850 },
+        // Right side: 3 long estate tables
+        { name: 'Estate 4', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 1900, y: 350 },
+        { name: 'Estate 5', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 1900, y: 600 },
+        { name: 'Estate 6', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 1900, y: 850 },
         // Bottom row: round tables flanking head table
         ...Array.from({ length: 6 }, (_, i) => ({
           ...round10, name: `Table ${i + 1}`,
