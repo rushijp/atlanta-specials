@@ -55,7 +55,7 @@ export default function Register() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-rose-600 text-white font-bold text-xl mb-4">
-            V
+            P
           </div>
           <h1 className="text-2xl font-bold text-gray-900">{APP_NAME}</h1>
           <p className="text-sm text-gray-500 mt-1">{APP_TAGLINE}</p>

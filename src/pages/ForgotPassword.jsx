@@ -30,7 +30,7 @@ export default function ForgotPassword() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-rose-600 text-white font-bold text-xl mb-4">
-            V
+            P
           </div>
           <h1 className="text-2xl font-bold text-gray-900">{APP_NAME}</h1>
         </div>

@@ -9,7 +9,7 @@ export default function Landing() {
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600 text-white font-bold text-sm">V</div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600 text-white font-bold text-sm">P</div>
           <span className="text-xl font-bold text-gray-900">{APP_NAME}</span>
         </div>
         <div className="flex items-center gap-3">
@@ -37,7 +37,7 @@ export default function Landing() {
       {/* Features */}
       <section className="px-6 py-16 max-w-6xl mx-auto">
         <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-          Everything Zola & WithJoy Can't Do
+          Built for Indian Weddings, From the Ground Up
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <FeatureCard

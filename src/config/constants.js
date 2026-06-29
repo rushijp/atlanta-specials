@@ -1,7 +1,7 @@
 // App-wide constants
 
-export const APP_NAME = 'Vaaru';
-export const APP_TAGLINE = 'Indian Wedding Planning, Perfected';
+export const APP_NAME = 'Phera';
+export const APP_TAGLINE = 'Your Indian Wedding, Beautifully Planned';
 
 // Firestore collection paths
 export const COLLECTIONS = {

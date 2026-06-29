@@ -44,7 +44,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-gray-100">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600 text-white font-bold text-sm">
-          V
+          P
         </div>
         {!collapsed && <span className="text-lg font-bold text-gray-900">{APP_NAME}</span>}
       </div>
