@@ -35,6 +35,9 @@ export function WeddingProvider({ children }) {
         return current;
       });
       setLoading(false);
+    }, (error) => {
+      console.error('Wedding subscription error:', error);
+      setLoading(false);
     });
 
     return unsub;

@@ -2,7 +2,31 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // submissions: auth required, fields validated, no updates/deletes from clients
+    // ─── Phera: User profiles ───────────────────────────────────────
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ─── Phera: Weddings ────────────────────────────────────────────
+    match /weddings/{weddingId} {
+      allow read: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+
+      // Subcollections: events, guests, families, seating, photoGroups, bets
+      match /{subcollection}/{docId} {
+        allow read, write: if request.auth != null
+          && get(/databases/$(database)/documents/weddings/$(weddingId)).data.ownerId == request.auth.uid;
+      }
+    }
+
+    // ─── Legacy: wedding photo queue ────────────────────────────────
+    match /wedding/{docId} {
+      allow read, write: if true;
+    }
+
+    // ─── Legacy: other collections ──────────────────────────────────
     match /submissions/{docId} {
       allow read: if false;
       allow create: if request.auth != null
@@ -17,32 +41,23 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // ratings: public read, auth required to write
     match /ratings/{restaurantKey} {
       allow read: if true;
       allow write: if request.auth != null;
     }
 
-    // bookmarks: users can only read/write their own document
     match /bookmarks/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // auto_deals: public read, no client writes (only Azure Function via Admin SDK)
     match /auto_deals/{docId} {
       allow read: if true;
       allow write: if false;
     }
 
-    // reviews: public read, auth required to write own entry
     match /reviews/{restaurantKey} {
       allow read: if true;
       allow write: if request.auth != null;
-    }
-
-    // wedding photo queue: public read+write (private URL is the access control)
-    match /wedding/{docId} {
-      allow read, write: if true;
     }
 
     // deny everything else by default
