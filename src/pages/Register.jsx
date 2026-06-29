@@ -43,10 +43,16 @@ export default function Register() {
   const handleGoogle = async () => {
     setError('');
     try {
-      await loginWithGoogle();
-      navigate('/dashboard');
+      const user = await loginWithGoogle();
+      if (user) navigate('/dashboard');
     } catch (err) {
-      setError(err.message);
+      if (err.code === 'auth/unauthorized-domain') {
+        setError('This domain is not authorized for Google sign-in. Please contact support.');
+      } else if (err.code === 'auth/cancelled-popup-request') {
+        // User clicked button multiple times, ignore
+      } else {
+        setError('Google sign-in failed. Please try again or use email.');
+      }
     }
   };
 

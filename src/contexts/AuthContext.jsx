@@ -4,6 +4,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   sendPasswordResetEmail,
@@ -21,6 +23,15 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Handle redirect result (for browsers/devices where popup was blocked)
+    getRedirectResult(auth).then(async (result) => {
+      if (result?.user) {
+        await ensureUserProfile(result.user);
+      }
+    }).catch((err) => {
+      console.error('Google redirect result error:', err);
+    });
+
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
@@ -39,6 +50,19 @@ export function AuthProvider({ children }) {
     return unsub;
   }, []);
 
+  const ensureUserProfile = async (firebaseUser) => {
+    const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, firebaseUser.uid));
+    if (!profileDoc.exists()) {
+      await setDoc(doc(db, COLLECTIONS.USERS, firebaseUser.uid), {
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName,
+        photoURL: firebaseUser.photoURL || null,
+        plan: 'free',
+        createdAt: serverTimestamp(),
+      });
+    }
+  };
+
   const register = async (email, password, displayName) => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(cred.user, { displayName });
@@ -55,18 +79,18 @@ export function AuthProvider({ children }) {
 
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    const cred = await signInWithPopup(auth, provider);
-    const profileDoc = await getDoc(doc(db, COLLECTIONS.USERS, cred.user.uid));
-    if (!profileDoc.exists()) {
-      await setDoc(doc(db, COLLECTIONS.USERS, cred.user.uid), {
-        email: cred.user.email,
-        displayName: cred.user.displayName,
-        photoURL: cred.user.photoURL,
-        plan: 'free',
-        createdAt: serverTimestamp(),
-      });
+    try {
+      const cred = await signInWithPopup(auth, provider);
+      await ensureUserProfile(cred.user);
+      return cred.user;
+    } catch (err) {
+      // If popup was blocked or failed, fall back to redirect
+      if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
+        await signInWithRedirect(auth, provider);
+        return null;
+      }
+      throw err;
     }
-    return cred.user;
   };
 
   const logout = () => signOut(auth);
