@@ -968,7 +968,7 @@ function ZoneElement({ zone, onUpdate, onRemove, zoom }) {
     >
       <div
         style={{ backgroundColor: zone.color || '#f3f4f6' }}
-        className="w-full h-full rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-default transition-colors hover:border-gray-400"
+        className="w-full h-full rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing transition-colors hover:border-gray-400"
         onMouseDown={handleGripDown}
       >
         <span className="text-2xl mb-1 pointer-events-none">{zoneIcon}</span>

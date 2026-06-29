@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
-import { Trash2, Edit3, GripVertical, Check, Users, X, AlertTriangle } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, Check, Users, X, AlertTriangle, RotateCw } from 'lucide-react';
 
 const SHAPE_OPTIONS = [
   { value: 'round', label: 'Round' },
@@ -94,6 +94,7 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
       shape: table.shape,
       width: table.width,
       height: table.height,
+      rotation: table.rotation || 0,
     });
     setIsEditing(true);
     setShowGuestPanel(false);
@@ -106,6 +107,7 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
       shape: editForm.shape,
       width: parseInt(editForm.width) || table.width,
       height: parseInt(editForm.height) || table.height,
+      rotation: parseInt(editForm.rotation) || 0,
     });
     setIsEditing(false);
   };
@@ -171,6 +173,7 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
         top: table.y,
         width: table.width + 80,
         height: table.height + 60,
+        transform: table.rotation ? `rotate(${table.rotation}deg)` : undefined,
       }}
       className="group"
     >
@@ -240,6 +243,15 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
                   <input type="number" min="40" max="500" value={editForm.height}
                     onChange={(e) => setEditForm((f) => ({ ...f, height: e.target.value }))}
                     className="w-full rounded-md border border-gray-300 px-2 py-1 text-xs" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-gray-500 mb-0.5">Rotation</label>
+                <div className="flex items-center gap-2">
+                  <input type="range" min="0" max="360" step="15" value={editForm.rotation || 0}
+                    onChange={(e) => setEditForm((f) => ({ ...f, rotation: e.target.value }))}
+                    className="flex-1 h-1.5 accent-wine-700" />
+                  <span className="text-[10px] text-gray-500 w-8 text-right">{editForm.rotation || 0}&deg;</span>
                 </div>
               </div>
               <div className="flex gap-1.5 pt-1">
@@ -379,6 +391,9 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
         </button>
         <button onClick={(e) => { e.stopPropagation(); setShowGuestPanel(true); }} className="p-1 rounded hover:bg-gray-100" title="View guests">
           <Users size={12} className="text-gray-500" />
+        </button>
+        <button onClick={(e) => { e.stopPropagation(); onUpdate({ rotation: ((table.rotation || 0) + 45) % 360 }); }} className="p-1 rounded hover:bg-gray-100" title="Rotate 45°">
+          <RotateCw size={12} className="text-gray-500" />
         </button>
         <button onClick={onRemove} className="p-1 rounded hover:bg-red-50" title="Remove table">
           <Trash2 size={12} className="text-red-500" />
