@@ -8,16 +8,77 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
+    // ─── Helper functions ───────────────────────────────────────────
+    function isOwner(weddingId) {
+      return request.auth != null
+        && get(/databases/$(database)/documents/weddings/$(weddingId)).data.ownerId == request.auth.uid;
+    }
+
+    function isCollaborator(weddingId) {
+      return request.auth != null
+        && request.auth.token.email in get(/databases/$(database)/documents/weddings/$(weddingId)).data.collaboratorEmails;
+    }
+
+    function isEditor(weddingId) {
+      return isOwner(weddingId) || isCollaborator(weddingId);
+    }
+
+    function hasAccess(weddingId) {
+      return isOwner(weddingId) || isCollaborator(weddingId);
+    }
+
     // ─── Phera: Weddings ────────────────────────────────────────────
     match /weddings/{weddingId} {
-      allow read: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      // Owner and collaborators can read; public can read basic wedding info for RSVP
+      allow read: if request.auth != null
+        && (resource.data.ownerId == request.auth.uid
+            || (resource.data.collaboratorEmails != null
+                && request.auth.token.email in resource.data.collaboratorEmails))
+        || true;  // Allow public read for RSVP page
       allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
-      allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+      // Owner and editors can update; only owner can delete
+      allow update: if request.auth != null
+        && (resource.data.ownerId == request.auth.uid
+            || (resource.data.collaboratorEmails != null
+                && request.auth.token.email in resource.data.collaboratorEmails));
+      allow delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
 
-      // Subcollections: events, guests, families, seating, photoGroups, bets
+      // Collaborators subcollection — only owner can manage
+      match /collaborators/{collabId} {
+        allow read: if hasAccess(weddingId);
+        allow write: if isOwner(weddingId);
+      }
+
+      // Settings subcollection
+      match /settings/{settingId} {
+        allow read: if hasAccess(weddingId);
+        allow write: if isEditor(weddingId);
+      }
+
+      // RSVP responses — anyone can submit (public), editors can read
+      match /rsvpResponses/{responseId} {
+        allow read: if hasAccess(weddingId);
+        allow create: if true;
+        allow update, delete: if isEditor(weddingId);
+      }
+
+      // Events — public read for RSVP page, editors can write
+      match /events/{eventId} {
+        allow read: if true;
+        allow write: if isEditor(weddingId);
+      }
+
+      // Guests — public read for RSVP lookup, editors can write
+      match /guests/{guestId} {
+        allow read: if true;
+        allow update: if true;  // Public RSVP updates guest rsvpStatus
+        allow create, delete: if isEditor(weddingId);
+      }
+
+      // All other subcollections: families, seating, photoGroups, bets, etc.
       match /{subcollection}/{docId} {
-        allow read, write: if request.auth != null
-          && get(/databases/$(database)/documents/weddings/$(weddingId)).data.ownerId == request.auth.uid;
+        allow read: if hasAccess(weddingId);
+        allow write: if isEditor(weddingId);
       }
     }
 
