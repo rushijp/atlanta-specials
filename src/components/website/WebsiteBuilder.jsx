@@ -36,7 +36,7 @@ function Toggle({ checked, onChange, label, disabled = false, helperText }) {
       <button
         type="button"
         onClick={() => !disabled && onChange(!checked)}
-        className={`relative mt-0.5 h-7 w-12 rounded-full transition ${checked ? 'bg-rose-600' : 'bg-gray-300'}`}
+        className={`relative mt-0.5 h-7 w-12 rounded-full transition ${checked ? 'bg-wine-700' : 'bg-gray-300'}`}
         disabled={disabled}
         aria-pressed={checked}
       >
@@ -251,7 +251,7 @@ export default function WebsiteBuilder() {
                       disabled={!canEdit}
                       onClick={() => canEdit && updateSection('websiteTheme', theme.key)}
                       className={`rounded-3xl border p-4 text-left transition ${
-                        selected ? 'border-rose-500 ring-2 ring-rose-100' : 'border-gray-200 hover:border-gray-300'
+                        selected ? 'border-wine-600 ring-2 ring-wine-100' : 'border-gray-200 hover:border-gray-300'
                       } ${canEdit ? '' : 'cursor-default'}`}
                       style={{ backgroundColor: theme.background }}
                     >
@@ -260,7 +260,7 @@ export default function WebsiteBuilder() {
                           className="h-12 w-12 rounded-2xl"
                           style={{ background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})` }}
                         />
-                        {selected && <Check className="text-rose-600" size={18} />}
+                        {selected && <Check className="text-wine-700" size={18} />}
                       </div>
                       <p className="text-lg font-semibold text-gray-900">{theme.name}</p>
                       <p className="mt-1 text-sm text-gray-600">{theme.description}</p>
@@ -289,7 +289,7 @@ export default function WebsiteBuilder() {
                     rows={3}
                     disabled={!canEdit}
                     placeholder="A joyful weekend of love, laughter, and forever."
-                    className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 disabled:bg-gray-50 disabled:text-gray-500"
+                    className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-wine-600 focus:outline-none focus:ring-1 focus:ring-wine-600 disabled:bg-gray-50 disabled:text-gray-500"
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -319,12 +319,12 @@ export default function WebsiteBuilder() {
             </Card>
 
             <Card title="Public Events">
-              <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl bg-rose-50 px-4 py-3">
+              <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl bg-wine-50 px-4 py-3">
                 <div>
-                  <p className="text-sm font-medium text-rose-900">{selectedEventsCount} event{selectedEventsCount === 1 ? '' : 's'} visible</p>
-                  <p className="text-xs text-rose-700">Select the celebrations guests should see on the public website.</p>
+                  <p className="text-sm font-medium text-wine-950">{selectedEventsCount} event{selectedEventsCount === 1 ? '' : 's'} visible</p>
+                  <p className="text-xs text-wine-800">Select the celebrations guests should see on the public website.</p>
                 </div>
-                <Globe className="text-rose-500" size={20} />
+                <Globe className="text-wine-600" size={20} />
               </div>
 
               <div className="space-y-3">
@@ -338,11 +338,11 @@ export default function WebsiteBuilder() {
                   return (
                     <label
                       key={event.id}
-                      className={`flex items-start gap-4 rounded-2xl border px-4 py-4 ${checked ? 'border-rose-200 bg-rose-50' : 'border-gray-200'} ${canEdit ? 'cursor-pointer' : 'cursor-default'}`}
+                      className={`flex items-start gap-4 rounded-2xl border px-4 py-4 ${checked ? 'border-wine-200 bg-wine-50' : 'border-gray-200'} ${canEdit ? 'cursor-pointer' : 'cursor-default'}`}
                     >
                       <input
                         type="checkbox"
-                        className="mt-1 h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                        className="mt-1 h-4 w-4 rounded border-gray-300 text-wine-700 focus:ring-wine-600"
                         checked={checked}
                         onChange={() => handleEventToggle(event.id)}
                         disabled={!canEdit}
@@ -378,7 +378,7 @@ export default function WebsiteBuilder() {
                   rows={6}
                   disabled={!canEdit}
                   placeholder="Tell your story here..."
-                  className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 disabled:bg-gray-50 disabled:text-gray-500"
+                  className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-wine-600 focus:outline-none focus:ring-1 focus:ring-wine-600 disabled:bg-gray-50 disabled:text-gray-500"
                 />
               </div>
             </Card>
@@ -542,7 +542,7 @@ export default function WebsiteBuilder() {
                 rows={3}
                 disabled={!canEdit}
                 placeholder="We can't wait to celebrate with you!"
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 disabled:bg-gray-50 disabled:text-gray-500"
+                className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-wine-600 focus:outline-none focus:ring-1 focus:ring-wine-600 disabled:bg-gray-50 disabled:text-gray-500"
               />
             </Card>
           </div>

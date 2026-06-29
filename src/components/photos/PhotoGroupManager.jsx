@@ -132,7 +132,7 @@ function PhotoGroupFormModal({ group, open, onClose, onSubmit }) {
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Bride's cousins"
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-wine-600 focus:outline-none focus:ring-1 focus:ring-wine-600"
           />
         </div>
         <div>
@@ -142,7 +142,7 @@ function PhotoGroupFormModal({ group, open, onClose, onSubmit }) {
             onChange={(event) => setMembersText(event.target.value)}
             rows={4}
             placeholder="One per line or separated by commas"
-            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+            className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-wine-600 focus:outline-none focus:ring-1 focus:ring-wine-600"
           />
         </div>
         <div className="flex justify-end gap-2">
@@ -168,12 +168,12 @@ function ShareLinkCard({ title, description, url }) {
   };
 
   return (
-    <div className="rounded-xl border border-rose-100 bg-rose-50/70 p-4">
+    <div className="rounded-xl border border-wine-100 bg-wine-50/70 p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-medium text-gray-900">{title}</p>
           <p className="mt-1 text-sm text-gray-500">{description}</p>
-          <p className="mt-2 truncate text-xs text-rose-700">{url}</p>
+          <p className="mt-2 truncate text-xs text-wine-800">{url}</p>
         </div>
         <Button size="sm" variant="outline" onClick={handleCopy}>
           <Copy size={14} />
@@ -366,15 +366,15 @@ function AdminPhotoGroupManager({ wedding }) {
       <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
         <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-3">
-            <Card className="border-rose-100">
+            <Card className="border-wine-100">
               <p className="text-sm text-gray-500">Pending</p>
               <p className="mt-2 text-3xl font-bold text-gray-900">{pendingGroups.filter((group) => group.status === 'pending').length}</p>
             </Card>
-            <Card className="border-rose-100">
+            <Card className="border-wine-100">
               <p className="text-sm text-gray-500">Current</p>
-              <p className="mt-2 text-3xl font-bold text-rose-600">{currentGroup ? 1 : 0}</p>
+              <p className="mt-2 text-3xl font-bold text-wine-700">{currentGroup ? 1 : 0}</p>
             </Card>
-            <Card className="border-rose-100">
+            <Card className="border-wine-100">
               <p className="text-sm text-gray-500">Completed</p>
               <p className="mt-2 text-3xl font-bold text-emerald-600">{completedGroups.length}</p>
             </Card>
@@ -383,16 +383,16 @@ function AdminPhotoGroupManager({ wedding }) {
           <Card
             title="Now on stage"
             actions={currentGroup && canEdit ? <Button size="sm" onClick={handleMarkCompleted}>Mark complete</Button> : null}
-            className="border-rose-100"
+            className="border-wine-100"
           >
             {loading ? (
               <p className="text-sm text-gray-500">Loading queue…</p>
             ) : currentGroup ? (
-              <div className="rounded-2xl bg-gradient-to-r from-rose-600 to-rose-500 p-6 text-white">
-                <p className="text-xs uppercase tracking-[0.3em] text-rose-100">Current group</p>
+              <div className="rounded-2xl bg-gradient-to-r from-wine-700 to-wine-600 p-6 text-white">
+                <p className="text-xs uppercase tracking-[0.3em] text-wine-100">Current group</p>
                 <h2 className="mt-3 text-3xl font-bold">{currentGroup.name}</h2>
                 {currentGroup.members?.length > 0 && (
-                  <p className="mt-3 text-sm leading-relaxed text-rose-50">{currentGroup.members.join(' · ')}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-wine-50">{currentGroup.members.join(' · ')}</p>
                 )}
               </div>
             ) : (
@@ -403,7 +403,7 @@ function AdminPhotoGroupManager({ wedding }) {
             )}
           </Card>
 
-          <Card title="Queue" className="border-rose-100">
+          <Card title="Queue" className="border-wine-100">
             {sortedGroups.length === 0 && !loading ? (
               <div className="rounded-2xl border border-dashed border-gray-200 p-8 text-center">
                 <p className="font-medium text-gray-900">No photo groups yet.</p>
@@ -437,7 +437,7 @@ function AdminPhotoGroupManager({ wedding }) {
         </div>
 
         <div className="space-y-6">
-          <Card title="Shareable links" className="border-rose-100">
+          <Card title="Shareable links" className="border-wine-100">
             <div className="space-y-3">
               <ShareLinkCard
                 title="Guest queue"
@@ -452,7 +452,7 @@ function AdminPhotoGroupManager({ wedding }) {
             </div>
           </Card>
 
-          <Card title="Up next" className="border-rose-100">
+          <Card title="Up next" className="border-wine-100">
             <div className="space-y-3">
               {pendingGroups.filter((group) => group.status === 'pending').slice(0, 5).map((group, index) => (
                 <div key={group.id} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
@@ -496,7 +496,7 @@ function PublicQueueShell({ wedding, groups, loading, displayMode = false }) {
       <div className="min-h-screen bg-gray-950 text-white">
         <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-12 sm:px-10">
           <header className="text-center">
-            <p className="text-xs uppercase tracking-[0.4em] text-rose-200/80">Photo Queue</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-wine-200/80">Photo Queue</p>
             <h1 className="mt-4 text-4xl font-semibold text-white sm:text-6xl">{weddingLabel}</h1>
           </header>
 
@@ -505,8 +505,8 @@ function PublicQueueShell({ wedding, groups, loading, displayMode = false }) {
               <p className="text-xl text-gray-300">Loading queue…</p>
             ) : currentGroup ? (
               <div className="max-w-5xl text-center">
-                <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-rose-500/20 px-4 py-2 text-sm text-rose-100">
-                  <span className="h-2.5 w-2.5 rounded-full bg-rose-400 animate-pulse" />
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-wine-600/20 px-4 py-2 text-sm text-wine-100">
+                  <span className="h-2.5 w-2.5 rounded-full bg-wine-400 animate-pulse" />
                   Now on stage
                 </div>
                 <h2 className="text-5xl font-bold tracking-tight sm:text-7xl">{currentGroup.name}</h2>
@@ -516,7 +516,7 @@ function PublicQueueShell({ wedding, groups, loading, displayMode = false }) {
               </div>
             ) : (
               <div className="text-center">
-                <Camera className="mx-auto text-rose-300" size={60} />
+                <Camera className="mx-auto text-wine-300" size={60} />
                 <h2 className="mt-5 text-4xl font-semibold">{completedGroups.length > 0 && nextGroups.length === 0 ? 'All groups complete' : 'Beginning shortly'}</h2>
               </div>
             )}
@@ -527,7 +527,7 @@ function PublicQueueShell({ wedding, groups, loading, displayMode = false }) {
               <p className="text-center text-xs uppercase tracking-[0.4em] text-gray-400">Coming up</p>
               <div className="mt-6 grid gap-4 md:grid-cols-3">
                 {nextGroups.slice(0, 3).map((group, index) => (
-                  <div key={group.id} className={`rounded-2xl border p-5 ${index === 0 ? 'border-rose-400/40 bg-rose-500/10' : 'border-white/10 bg-white/5'}`}>
+                  <div key={group.id} className={`rounded-2xl border p-5 ${index === 0 ? 'border-wine-400/40 bg-wine-600/10' : 'border-white/10 bg-white/5'}`}>
                     <p className="text-xs uppercase tracking-[0.3em] text-gray-400">{index === 0 ? 'On deck' : `Next ${index + 1}`}</p>
                     <h3 className="mt-3 text-2xl font-semibold">{group.name}</h3>
                     {group.members?.length > 0 && (
@@ -544,16 +544,16 @@ function PublicQueueShell({ wedding, groups, loading, displayMode = false }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-amber-50">
+    <div className="min-h-screen bg-gradient-to-br from-wine-50 via-white to-amber-50">
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
         <div className="text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-rose-500">Photo Queue</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-wine-600">Photo Queue</p>
           <h1 className="mt-3 text-3xl font-bold text-gray-900 sm:text-4xl">{weddingLabel}</h1>
           <p className="mt-3 text-sm text-gray-500">Follow the live queue and be ready when your group is on deck.</p>
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-          <Card className="border-rose-100">
+          <Card className="border-wine-100">
             {loading ? (
               <p className="text-sm text-gray-500">Loading queue…</p>
             ) : currentGroup ? (
@@ -566,14 +566,14 @@ function PublicQueueShell({ wedding, groups, loading, displayMode = false }) {
               </div>
             ) : (
               <div className="text-center py-10">
-                <Camera className="mx-auto text-rose-400" size={36} />
+                <Camera className="mx-auto text-wine-400" size={36} />
                 <p className="mt-4 text-lg font-semibold text-gray-900">No group is live yet</p>
                 <p className="mt-1 text-sm text-gray-500">Check back in a moment for the next call.</p>
               </div>
             )}
           </Card>
 
-          <Card title="Up next" className="border-rose-100">
+          <Card title="Up next" className="border-wine-100">
             <div className="space-y-3">
               {nextGroups.slice(0, 5).map((group, index) => (
                 <div key={group.id} className="rounded-xl border border-gray-100 px-4 py-3">
@@ -591,7 +591,7 @@ function PublicQueueShell({ wedding, groups, loading, displayMode = false }) {
           </Card>
         </div>
 
-        <Card title="Full queue" className="mt-6 border-rose-100">
+        <Card title="Full queue" className="mt-6 border-wine-100">
           <div className="space-y-3">
             {groups.map((group) => (
               <div key={group.id} className="rounded-xl border border-gray-100 px-4 py-3">

@@ -186,7 +186,7 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
         className={`
           border-2 flex flex-col items-center justify-center transition-colors cursor-grab active:cursor-grabbing
           ${shapeStyles[table.shape]}
-          ${isOver ? 'border-rose-500 bg-rose-50 shadow-lg ring-2 ring-rose-300' : isOverCapacity ? 'border-red-400 bg-red-50' : hasWarnings ? 'border-amber-400 bg-amber-50 ring-1 ring-amber-200' : showGuestPanel ? 'border-rose-400 bg-rose-50/50 ring-1 ring-rose-200' : 'border-gray-300 bg-white hover:border-gray-400'}
+          ${isOver ? 'border-wine-600 bg-wine-50 shadow-lg ring-2 ring-wine-300' : isOverCapacity ? 'border-red-400 bg-red-50' : hasWarnings ? 'border-amber-400 bg-amber-50 ring-1 ring-amber-200' : showGuestPanel ? 'border-wine-400 bg-wine-50/50 ring-1 ring-wine-200' : 'border-gray-300 bg-white hover:border-gray-400'}
         `}
         onMouseDown={handleGripMouseDown}
         onClick={handleTableClick}
@@ -244,7 +244,7 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
               </div>
               <div className="flex gap-1.5 pt-1">
                 <button onClick={handleSaveEdit}
-                  className="flex-1 flex items-center justify-center gap-1 rounded-md bg-rose-600 text-white text-xs py-1.5 font-medium hover:bg-rose-700">
+                  className="flex-1 flex items-center justify-center gap-1 rounded-md bg-wine-700 text-white text-xs py-1.5 font-medium hover:bg-wine-800">
                   <Check size={12} /> Save
                 </button>
                 <button onClick={() => setIsEditing(false)}
@@ -278,7 +278,7 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
           {/* Header */}
           <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50 rounded-t-xl">
             <div className="flex items-center gap-1.5">
-              <Users size={12} className="text-rose-500" />
+              <Users size={12} className="text-wine-600" />
               <span className="text-xs font-semibold text-gray-700">{table.name}</span>
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${isOverCapacity ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500'}`}>
                 {assignedGuests.length}/{table.capacity}
@@ -451,8 +451,8 @@ function SeatedGuestChip({ guest, x, y, familyAtTable, chairSize }) {
         }}
         className={`
           rounded-full cursor-grab active:cursor-grabbing transition-colors
-          ${isDragging ? 'ring-2 ring-rose-400 opacity-70' : ''}
-          ${familyAtTable ? 'bg-amber-400 border-2 border-amber-500' : 'bg-rose-400 border-2 border-rose-500'}
+          ${isDragging ? 'ring-2 ring-wine-400 opacity-70' : ''}
+          ${familyAtTable ? 'bg-amber-400 border-2 border-amber-500' : 'bg-wine-400 border-2 border-wine-600'}
         `}
         title={`${guest.firstName} ${guest.lastName}${guest.familyName ? ` (${guest.familyName})` : ''} — ${guest.dietary || 'no dietary'}`}
       />

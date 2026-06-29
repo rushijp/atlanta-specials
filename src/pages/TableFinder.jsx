@@ -76,8 +76,8 @@ export default function TableFinder() {
     return (
       <PageShell>
         <div className="rounded-[2rem] border border-white/70 bg-white/90 px-8 py-12 text-center shadow-[0_24px_80px_rgba(15,23,42,0.12)]">
-          <div className="mx-auto mb-4 h-12 w-12 animate-pulse rounded-full bg-rose-100" />
-          <p className="text-sm font-medium text-rose-600">Loading seating details...</p>
+          <div className="mx-auto mb-4 h-12 w-12 animate-pulse rounded-full bg-wine-100" />
+          <p className="text-sm font-medium text-wine-700">Loading seating details...</p>
         </div>
       </PageShell>
     );
@@ -87,14 +87,14 @@ export default function TableFinder() {
     <PageShell>
       <div className="mx-auto w-full max-w-2xl">
         <div className="text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-100 text-rose-600 shadow-sm">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-wine-100 text-wine-700 shadow-sm">
             <MapPin size={24} />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Find your table</h1>
           <p className="mt-3 text-sm leading-6 text-gray-600">
             Search your first name, last name, or full name to see where you are seated{eventName ? ` for ${eventName}` : ''}.
           </p>
-          <p className="mt-2 text-xs uppercase tracking-[0.25em] text-rose-500">{coupleName}</p>
+          <p className="mt-2 text-xs uppercase tracking-[0.25em] text-wine-600">{coupleName}</p>
         </div>
 
         <div className="mt-8 rounded-[2rem] border border-white/70 bg-white/95 p-5 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur sm:p-8">
@@ -120,11 +120,11 @@ export default function TableFinder() {
           {results.length > 0 && (
             <div className="mt-6 space-y-4">
               {results.map((result) => (
-                <div key={result.guest.id} className="overflow-hidden rounded-[1.75rem] border border-rose-100 bg-gradient-to-br from-rose-50 to-white">
+                <div key={result.guest.id} className="overflow-hidden rounded-[1.75rem] border border-wine-100 bg-gradient-to-br from-wine-50 to-white">
                   <div className="px-5 py-6 sm:px-6">
-                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-rose-500">{result.guest.firstName} {result.guest.lastName}</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-wine-600">{result.guest.firstName} {result.guest.lastName}</p>
                     <h2 className="mt-2 text-3xl font-bold text-gray-900">
-                      You&apos;re at <span className="text-rose-600">{result.table.name}</span>!
+                      You&apos;re at <span className="text-wine-700">{result.table.name}</span>!
                     </h2>
                     <p className="mt-2 text-sm text-gray-600">
                       {eventName ? `For ${eventName}, ` : ''}head to {result.table.name} and look for your place setting.
@@ -132,13 +132,13 @@ export default function TableFinder() {
 
                     <div className="mt-5 rounded-2xl border border-white/70 bg-white/80 p-4">
                       <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-                        <Users size={16} className="text-rose-500" />
+                        <Users size={16} className="text-wine-600" />
                         Tablemates
                       </div>
                       {result.tablemates.length > 0 ? (
                         <div className="mt-3 flex flex-wrap gap-2">
                           {result.tablemates.map((guest) => (
-                            <span key={guest.id} className="rounded-full bg-rose-100 px-3 py-1 text-sm font-medium text-rose-700">
+                            <span key={guest.id} className="rounded-full bg-wine-100 px-3 py-1 text-sm font-medium text-wine-800">
                               {guest.firstName} {guest.lastName}
                             </span>
                           ))}
@@ -155,7 +155,7 @@ export default function TableFinder() {
 
           {searched && !searching && results.length === 0 && !error && (
             <div className="mt-6 rounded-[1.5rem] border border-dashed border-gray-300 bg-gray-50 px-5 py-8 text-center">
-              <Heart className="mx-auto mb-3 text-rose-300" size={28} />
+              <Heart className="mx-auto mb-3 text-wine-300" size={28} />
               <h2 className="text-lg font-semibold text-gray-900">We couldn&apos;t find a table yet</h2>
               <p className="mt-2 text-sm text-gray-500">
                 Try your full name, a different spelling, or check with the couple if you&apos;re unsure.

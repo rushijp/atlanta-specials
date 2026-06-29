@@ -4,7 +4,7 @@ const badgeVariants = {
   warning: 'bg-amber-100 text-amber-700',
   danger: 'bg-red-100 text-red-700',
   info: 'bg-blue-100 text-blue-700',
-  rose: 'bg-rose-100 text-rose-700',
+  rose: 'bg-wine-100 text-wine-800',
 };
 
 export default function Badge({ variant = 'default', children, className = '' }) {

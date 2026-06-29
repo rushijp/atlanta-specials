@@ -40,7 +40,7 @@ export default function EventList() {
                   setPrefill({ name: tmpl.name, dressCode: tmpl.defaultDressCode });
                   setShowAdd(true);
                 }}
-                className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700 transition-colors"
+                className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-wine-50 hover:border-wine-200 hover:text-wine-800 transition-colors"
               >
                 <span>{tmpl.name}</span>
               </button>
@@ -161,7 +161,7 @@ function EventFormModal({ open, onClose, event, prefill, weddingId, eventCount }
                   type="button"
                   onClick={() => { update('name', t.name); update('dressCode', t.defaultDressCode); }}
                   className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                    form.name === t.name ? 'bg-rose-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    form.name === t.name ? 'bg-wine-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {t.name}

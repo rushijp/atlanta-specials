@@ -65,14 +65,14 @@ export default function CollaboratorsPanel() {
       {/* Owner */}
       <div className="rounded-xl border border-gray-200 bg-white p-4">
         <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-          <Shield size={16} className="text-rose-600" />
+          <Shield size={16} className="text-wine-700" />
           Wedding Team
         </h3>
 
         <div className="space-y-2">
           {/* Owner row */}
-          <div className="flex items-center gap-3 px-3 py-2.5 bg-rose-50 rounded-lg">
-            <div className="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center text-sm font-bold">
+          <div className="flex items-center gap-3 px-3 py-2.5 bg-wine-50 rounded-lg">
+            <div className="w-8 h-8 rounded-full bg-wine-700 text-white flex items-center justify-center text-sm font-bold">
               <Crown size={14} />
             </div>
             <div className="flex-1">
@@ -146,7 +146,7 @@ export default function CollaboratorsPanel() {
         <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Roles</h4>
         <div className="space-y-2 text-xs text-gray-600">
           <div className="flex items-start gap-2">
-            <Crown size={12} className="text-rose-600 mt-0.5 flex-shrink-0" />
+            <Crown size={12} className="text-wine-700 mt-0.5 flex-shrink-0" />
             <div><strong>Owner</strong> — Full control, manage collaborators, delete wedding</div>
           </div>
           <div className="flex items-start gap-2">
@@ -174,7 +174,7 @@ export default function CollaboratorsPanel() {
               value={inviteName}
               onChange={(e) => setInviteName(e.target.value)}
               placeholder="e.g. Mom, Brijal, Wedding Planner"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-wine-600 focus:ring-1 focus:ring-wine-600"
             />
           </div>
 
@@ -185,7 +185,7 @@ export default function CollaboratorsPanel() {
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
               placeholder="their-email@example.com"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-wine-600 focus:ring-1 focus:ring-wine-600"
             />
             <p className="text-xs text-gray-400 mt-1">They'll need to sign up with this email to access the wedding</p>
           </div>

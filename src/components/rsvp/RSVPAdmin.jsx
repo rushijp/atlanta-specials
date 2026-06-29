@@ -168,7 +168,7 @@ export default function RSVPAdmin() {
             placeholder="Search guests..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm pl-9 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm pl-9 focus:border-wine-600 focus:ring-1 focus:ring-wine-600"
           />
           <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         </div>
@@ -221,7 +221,7 @@ export default function RSVPAdmin() {
                   </td>
                   <td className="px-4 py-2.5 text-gray-500">{guest.familyName || '—'}</td>
                   <td className="px-4 py-2.5">
-                    <span className={`text-xs font-medium ${guest.side === 'bride' ? 'text-rose-600' : 'text-blue-600'}`}>
+                    <span className={`text-xs font-medium ${guest.side === 'bride' ? 'text-wine-700' : 'text-blue-600'}`}>
                       {guest.side === 'bride' ? 'Bride' : 'Groom'}
                     </span>
                   </td>
@@ -409,7 +409,7 @@ function RsvpSettingsForm({ settings, onSave }) {
           type="checkbox"
           checked={form.isOpen}
           onChange={(e) => setForm({ ...form, isOpen: e.target.checked })}
-          className="rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+          className="rounded border-gray-300 text-wine-700 focus:ring-wine-600"
         />
         <span className="text-sm font-medium">RSVPs are open</span>
       </label>
@@ -430,7 +430,7 @@ function RsvpSettingsForm({ settings, onSave }) {
             type="checkbox"
             checked={form.familyRsvp}
             onChange={(e) => setForm({ ...form, familyRsvp: e.target.checked })}
-            className="rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+            className="rounded border-gray-300 text-wine-700 focus:ring-wine-600"
           />
           <div>
             <span className="text-sm font-medium">Family Group RSVP</span>
@@ -443,7 +443,7 @@ function RsvpSettingsForm({ settings, onSave }) {
             type="checkbox"
             checked={form.allowPlusOne}
             onChange={(e) => setForm({ ...form, allowPlusOne: e.target.checked })}
-            className="rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+            className="rounded border-gray-300 text-wine-700 focus:ring-wine-600"
           />
           <span className="text-sm font-medium">Allow plus-ones</span>
         </label>
@@ -453,7 +453,7 @@ function RsvpSettingsForm({ settings, onSave }) {
             type="checkbox"
             checked={form.allowDietary}
             onChange={(e) => setForm({ ...form, allowDietary: e.target.checked })}
-            className="rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+            className="rounded border-gray-300 text-wine-700 focus:ring-wine-600"
           />
           <span className="text-sm font-medium">Ask dietary preferences</span>
         </label>
@@ -463,7 +463,7 @@ function RsvpSettingsForm({ settings, onSave }) {
             type="checkbox"
             checked={form.allowMessage}
             onChange={(e) => setForm({ ...form, allowMessage: e.target.checked })}
-            className="rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+            className="rounded border-gray-300 text-wine-700 focus:ring-wine-600"
           />
           <span className="text-sm font-medium">Allow guest messages</span>
         </label>
@@ -473,7 +473,7 @@ function RsvpSettingsForm({ settings, onSave }) {
             type="checkbox"
             checked={form.requirePhone}
             onChange={(e) => setForm({ ...form, requirePhone: e.target.checked })}
-            className="rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+            className="rounded border-gray-300 text-wine-700 focus:ring-wine-600"
           />
           <span className="text-sm font-medium">Require phone number</span>
         </label>

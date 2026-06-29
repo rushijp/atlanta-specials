@@ -44,7 +44,7 @@ export default function GuestSidebar({
         {/* Progress bar */}
         <div className="w-full h-1.5 bg-gray-100 rounded-full mb-3">
           <div
-            className="h-full bg-rose-500 rounded-full transition-all"
+            className="h-full bg-wine-600 rounded-full transition-all"
             style={{ width: `${totalCount > 0 ? (assignedCount / totalCount) * 100 : 0}%` }}
           />
         </div>
@@ -57,7 +57,7 @@ export default function GuestSidebar({
             placeholder="Search guests..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 pl-8 pr-3 py-1.5 text-xs focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+            className="w-full rounded-lg border border-gray-200 pl-8 pr-3 py-1.5 text-xs focus:border-wine-600 focus:ring-1 focus:ring-wine-600"
           />
         </div>
 
@@ -130,10 +130,10 @@ function DraggableGuest({ guest }) {
       {...attributes}
       className={`
         flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs cursor-grab active:cursor-grabbing transition-colors
-        ${isDragging ? 'opacity-50 bg-rose-100' : 'hover:bg-gray-50'}
+        ${isDragging ? 'opacity-50 bg-wine-100' : 'hover:bg-gray-50'}
       `}
     >
-      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${guest.side === 'bride' ? 'bg-rose-400' : 'bg-blue-400'}`} />
+      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${guest.side === 'bride' ? 'bg-wine-400' : 'bg-blue-400'}`} />
       <span className="font-medium text-gray-800 truncate">
         {guest.firstName} {guest.lastName}
       </span>

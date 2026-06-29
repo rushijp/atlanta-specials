@@ -51,10 +51,10 @@ export default function Register() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-rose-50 to-amber-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-wine-50 to-amber-50 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-rose-600 text-white font-bold text-xl mb-4">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-wine-700 text-white font-bold text-xl mb-4">
             P
           </div>
           <h1 className="text-2xl font-bold text-gray-900">{APP_NAME}</h1>
@@ -124,7 +124,7 @@ export default function Register() {
 
           <p className="mt-6 text-center text-sm text-gray-500">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-rose-600 hover:text-rose-700">
+            <Link to="/login" className="font-medium text-wine-700 hover:text-wine-800">
               Sign in
             </Link>
           </p>

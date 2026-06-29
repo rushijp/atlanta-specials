@@ -137,7 +137,7 @@ export default function RulesPanel({
                           key={option.value}
                           type="button"
                           onClick={() => setForm((current) => ({ ...current, scope: option.value, primaryGuestId: '', secondaryGuestId: '', familyName: '' }))}
-                          className={`rounded-lg px-3 py-2 text-xs font-medium ${form.scope === option.value ? 'bg-rose-600 text-white' : 'border border-gray-300 bg-white text-gray-600'}`}
+                          className={`rounded-lg px-3 py-2 text-xs font-medium ${form.scope === option.value ? 'bg-wine-700 text-white' : 'border border-gray-300 bg-white text-gray-600'}`}
                         >
                           {option.label}
                         </button>
@@ -234,7 +234,7 @@ export default function RulesPanel({
                 <div key={rule.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">
+                      <div className="text-xs font-semibold uppercase tracking-[0.2em] text-wine-600">
                         {RULE_TYPES.find((option) => option.value === rule.type)?.label || rule.type}
                       </div>
                       <p className="mt-1 text-sm text-gray-700">{buildRuleDescription(rule, guests)}</p>

@@ -432,7 +432,7 @@ export default function SeatingCanvas() {
               <>
                 <input type="range" min="5" max="80" value={venueOpacity * 100}
                   onChange={(e) => { setVenueOpacity(parseInt(e.target.value) / 100); setHasChanges(true); }}
-                  className="w-16 h-1 accent-rose-500" title={`Opacity: ${Math.round(venueOpacity * 100)}%`} />
+                  className="w-16 h-1 accent-wine-600" title={`Opacity: ${Math.round(venueOpacity * 100)}%`} />
                 <Button variant="outline" size="sm" onClick={() => { setVenueImage(null); setHasChanges(true); }}>
                   ✕ BG
                 </Button>
@@ -549,7 +549,7 @@ export default function SeatingCanvas() {
       {/* Drag overlay */}
       <DragOverlay>
         {draggedGuest && (
-          <div className="rounded-lg bg-rose-600 text-white px-3 py-1.5 text-sm font-medium shadow-lg">
+          <div className="rounded-lg bg-wine-700 text-white px-3 py-1.5 text-sm font-medium shadow-lg">
             {draggedGuest.firstName} {draggedGuest.lastName}
           </div>
         )}
@@ -564,7 +564,7 @@ export default function SeatingCanvas() {
               <button
                 key={i}
                 onClick={() => addTable(preset)}
-                className="flex items-center gap-2 rounded-xl border border-gray-200 p-3 hover:bg-rose-50 hover:border-rose-200 transition-colors text-left"
+                className="flex items-center gap-2 rounded-xl border border-gray-200 p-3 hover:bg-wine-50 hover:border-wine-200 transition-colors text-left"
               >
                 <TableShapeIcon shape={preset.shape} />
                 <div>
@@ -578,7 +578,7 @@ export default function SeatingCanvas() {
           <div className="border-t border-gray-100 pt-3">
             <button
               onClick={() => { setShowAddTable(false); setShowCustom(true); }}
-              className="w-full text-center text-sm text-rose-600 font-medium hover:text-rose-700 py-2"
+              className="w-full text-center text-sm text-wine-700 font-medium hover:text-wine-800 py-2"
             >
               + Create Custom Table
             </button>
@@ -672,8 +672,8 @@ export default function SeatingCanvas() {
             Share this QR code so guests can search their name and find their assigned table{selectedEvent ? ` for ${selectedEvent.name}` : ''}.
           </p>
 
-          <div ref={qrPrintRef} className="rounded-3xl border border-rose-100 bg-gradient-to-br from-rose-50 to-white p-6 text-center">
-            <div className="text-xs font-semibold uppercase tracking-[0.3em] text-rose-500">
+          <div ref={qrPrintRef} className="rounded-3xl border border-wine-100 bg-gradient-to-br from-wine-50 to-white p-6 text-center">
+            <div className="text-xs font-semibold uppercase tracking-[0.3em] text-wine-600">
               {selectedEvent?.name || 'Table Finder'}
             </div>
             <h3 className="mt-2 text-2xl font-bold text-gray-900">Find Your Table</h3>
@@ -1302,7 +1302,7 @@ function VenuePresetsPanel({ onApply, onClose }) {
                 onApply(layout);
               }
             }}
-            className="flex items-start gap-3 rounded-xl border border-gray-200 p-4 hover:bg-rose-50 hover:border-rose-200 transition-colors text-left"
+            className="flex items-start gap-3 rounded-xl border border-gray-200 p-4 hover:bg-wine-50 hover:border-wine-200 transition-colors text-left"
           >
             <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-wine-50 flex items-center justify-center">
               <Grid3X3 size={18} className="text-wine-700" />

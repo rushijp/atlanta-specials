@@ -88,7 +88,7 @@ export default function GuestList() {
             placeholder="Search guests..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+            className="w-full rounded-lg border border-gray-300 pl-9 pr-3 py-2 text-sm focus:border-wine-600 focus:ring-1 focus:ring-wine-600"
           />
         </div>
 
@@ -120,8 +120,8 @@ export default function GuestList() {
 
       {/* Bulk actions */}
       {selected.size > 0 && (
-        <div className="flex items-center gap-3 rounded-lg bg-rose-50 px-4 py-2">
-          <span className="text-sm font-medium text-rose-700">{selected.size} selected</span>
+        <div className="flex items-center gap-3 rounded-lg bg-wine-50 px-4 py-2">
+          <span className="text-sm font-medium text-wine-800">{selected.size} selected</span>
           <Button variant="danger" size="sm" onClick={handleBulkDelete}>
             <Trash2 size={14} /> Delete
           </Button>
@@ -309,7 +309,7 @@ function GuestFormModal({ open, onClose, guest, weddingId, events }) {
                 type="button"
                 onClick={() => toggleTag(tag)}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  (form.tags || []).includes(tag) ? 'bg-rose-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  (form.tags || []).includes(tag) ? 'bg-wine-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 {tag}
@@ -417,14 +417,14 @@ function ImportModal({ open, onClose, weddingId, existingGuests }) {
     <Modal open={open} onClose={handleClose} title="Import Guests" size="xl">
       {step === 'upload' && (
         <div className="text-center py-8">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50">
-            <Upload size={28} className="text-rose-600" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-wine-50">
+            <Upload size={28} className="text-wine-700" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Upload Excel or CSV</h3>
           <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">
             Upload your guest list from Excel (.xlsx) or CSV. We'll auto-detect columns like Name, Email, Family, Side, and Table #.
           </p>
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-rose-600 px-6 py-3 text-sm font-medium text-white hover:bg-rose-700">
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-wine-700 px-6 py-3 text-sm font-medium text-white hover:bg-wine-800">
             <Upload size={16} /> Choose File
             <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFile} className="hidden" />
           </label>

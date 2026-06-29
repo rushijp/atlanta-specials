@@ -8,9 +8,9 @@ import { getCoupleDisplayName, normalizeWebsiteConfig } from '../components/webs
 
 function CenteredState({ title, message, error = false }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-rose-50 via-white to-amber-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-wine-50 via-white to-amber-50 px-4">
       <div className="max-w-md rounded-[2rem] border border-white/60 bg-white/90 px-8 py-10 text-center shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur">
-        <div className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full ${error ? 'bg-red-100 text-red-600' : 'bg-rose-100 text-rose-600'}`}>
+        <div className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full ${error ? 'bg-red-100 text-red-600' : 'bg-wine-100 text-wine-700'}`}>
           <Heart size={24} />
         </div>
         <h1 className="text-2xl font-semibold text-gray-900">{title}</h1>

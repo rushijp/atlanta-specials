@@ -112,8 +112,8 @@ export default function PrintCenter() {
         {/* Place Cards */}
         <div className="rounded-xl border border-gray-200 bg-white p-5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-rose-50 flex items-center justify-center">
-              <CreditCard size={20} className="text-rose-600" />
+            <div className="w-10 h-10 rounded-lg bg-wine-50 flex items-center justify-center">
+              <CreditCard size={20} className="text-wine-700" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Place Cards</h3>
@@ -129,7 +129,7 @@ export default function PrintCenter() {
                   key={s}
                   onClick={() => setCardStyle(s)}
                   className={`px-3 py-1 rounded-full text-xs capitalize transition-colors ${
-                    cardStyle === s ? 'bg-rose-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    cardStyle === s ? 'bg-wine-700 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {s}
@@ -139,15 +139,15 @@ export default function PrintCenter() {
 
             <div className="space-y-1.5 pt-1">
               <label className="flex items-center gap-2 text-xs text-gray-600">
-                <input type="checkbox" checked={showTable} onChange={(e) => setShowTable(e.target.checked)} className="rounded border-gray-300 text-rose-600 focus:ring-rose-500" />
+                <input type="checkbox" checked={showTable} onChange={(e) => setShowTable(e.target.checked)} className="rounded border-gray-300 text-wine-700 focus:ring-wine-600" />
                 Show table name
               </label>
               <label className="flex items-center gap-2 text-xs text-gray-600">
-                <input type="checkbox" checked={showDietary} onChange={(e) => setShowDietary(e.target.checked)} className="rounded border-gray-300 text-rose-600 focus:ring-rose-500" />
+                <input type="checkbox" checked={showDietary} onChange={(e) => setShowDietary(e.target.checked)} className="rounded border-gray-300 text-wine-700 focus:ring-wine-600" />
                 Show dietary (Veg/Jain)
               </label>
               <label className="flex items-center gap-2 text-xs text-gray-600">
-                <input type="checkbox" checked={showFamily} onChange={(e) => setShowFamily(e.target.checked)} className="rounded border-gray-300 text-rose-600 focus:ring-rose-500" />
+                <input type="checkbox" checked={showFamily} onChange={(e) => setShowFamily(e.target.checked)} className="rounded border-gray-300 text-wine-700 focus:ring-wine-600" />
                 Show family name
               </label>
             </div>
