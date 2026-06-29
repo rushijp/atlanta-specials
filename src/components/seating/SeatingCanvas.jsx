@@ -1031,7 +1031,7 @@ function ZoneElement({ zone, onUpdate, onRemove, zoom }) {
 // chip positioning padding. Spacing must account for this.
 
 const VENUE_LAYOUTS = (() => {
-  const S = 280; // standard spacing for round tables (120w + 80 pad + gap)
+  const S = 220; // tighter spacing for round tables (120w + 60 pad + 40gap)
   const round10 = { shape: 'round', capacity: 10, width: 120, height: 120 };
   const round8 = { shape: 'round', capacity: 8, width: 110, height: 110 };
 
@@ -1053,33 +1053,31 @@ const VENUE_LAYOUTS = (() => {
       description: 'Head table at top, stage at bottom, staggered tables left & right of dance floor',
       icon: '🏛️',
       tables: [
-        // Head table at top
-        { name: 'Head Table', shape: 'head-table', capacity: 12, width: 340, height: 60, x: 1030, y: 80 },
+        { name: 'Head Table', shape: 'head-table', capacity: 12, width: 340, height: 60, x: 730, y: 60 },
         ...(() => {
           const t = []; let n = 0;
-          // Left side — 2 staggered columns × 7 rows
+          // Left side — 2 staggered columns × 7 rows (close to dance floor)
           for (let r = 0; r < 7; r++) {
-            const stagger = r % 2 === 1 ? 60 : 0;
-            t.push({ ...round10, name: `Table ${++n}`, x: 100 + stagger, y: 300 + r * S });
-            t.push({ ...round10, name: `Table ${++n}`, x: 100 + S + stagger, y: 300 + r * S });
+            const stagger = r % 2 === 1 ? 50 : 0;
+            t.push({ ...round10, name: `Table ${++n}`, x: 80 + stagger, y: 220 + r * S });
+            t.push({ ...round10, name: `Table ${++n}`, x: 280 + stagger, y: 220 + r * S });
           }
           // Right side — 2 staggered columns × 7 rows
           for (let r = 0; r < 7; r++) {
-            const stagger = r % 2 === 1 ? -60 : 0;
-            t.push({ ...round10, name: `Table ${++n}`, x: 1700 + stagger, y: 300 + r * S });
-            t.push({ ...round10, name: `Table ${++n}`, x: 1700 + S + stagger, y: 300 + r * S });
+            const stagger = r % 2 === 1 ? -50 : 0;
+            t.push({ ...round10, name: `Table ${++n}`, x: 1300 + stagger, y: 220 + r * S });
+            t.push({ ...round10, name: `Table ${++n}`, x: 1500 + stagger, y: 220 + r * S });
           }
           return t.slice(0, 28);
         })(),
-        // 2 tables flanking head table
-        { ...round10, name: 'Table 29', x: 600, y: 80 },
-        { ...round10, name: 'Table 30', x: 1550, y: 80 },
+        { ...round10, name: 'Table 29', x: 450, y: 60 },
+        { ...round10, name: 'Table 30', x: 1150, y: 60 },
       ],
       zones: [
-        { type: 'stage', label: 'Stage / DJ', width: 500, height: 100, x: 950, y: 2150, color: '#e0e7ff' },
-        { type: 'dancefloor', label: 'Dance Floor', width: 500, height: 500, x: 950, y: 800, color: '#fef3c7' },
-        { type: 'bar', label: 'Bar', width: 200, height: 70, x: 100, y: 2150, color: '#dbeafe' },
-        { type: 'desserts', label: 'Desserts', width: 160, height: 70, x: 2150, y: 2150, color: '#fef9c3' },
+        { type: 'stage', label: 'Stage / DJ', width: 400, height: 90, x: 700, y: 1800, color: '#e0e7ff' },
+        { type: 'dancefloor', label: 'Dance Floor', width: 420, height: 420, x: 690, y: 600, color: '#fef3c7' },
+        { type: 'bar', label: 'Bar', width: 180, height: 60, x: 80, y: 1800, color: '#dbeafe' },
+        { type: 'desserts', label: 'Desserts', width: 150, height: 60, x: 1550, y: 1800, color: '#fef9c3' },
       ],
     },
     {
@@ -1087,27 +1085,27 @@ const VENUE_LAYOUTS = (() => {
       description: 'Head table at top, stage at bottom, staggered rounds on each side',
       icon: '🎊',
       tables: [
-        { name: 'Head Table', shape: 'head-table', capacity: 10, width: 300, height: 60, x: 1000, y: 80 },
+        { name: 'Head Table', shape: 'head-table', capacity: 10, width: 300, height: 60, x: 650, y: 60 },
         ...(() => {
           const t = []; let n = 0;
           // Left side staggered (2 cols × 5 rows)
           for (let r = 0; r < 5; r++) {
-            const stagger = r % 2 === 1 ? 50 : 0;
-            t.push({ ...round8, name: `Table ${++n}`, x: 150 + stagger, y: 300 + r * S });
-            t.push({ ...round8, name: `Table ${++n}`, x: 150 + S + stagger, y: 300 + r * S });
+            const stagger = r % 2 === 1 ? 40 : 0;
+            t.push({ ...round8, name: `Table ${++n}`, x: 80 + stagger, y: 220 + r * S });
+            t.push({ ...round8, name: `Table ${++n}`, x: 280 + stagger, y: 220 + r * S });
           }
           // Right side staggered (2 cols × 5 rows)
           for (let r = 0; r < 5; r++) {
-            const stagger = r % 2 === 1 ? -50 : 0;
-            t.push({ ...round8, name: `Table ${++n}`, x: 1600 + stagger, y: 300 + r * S });
-            t.push({ ...round8, name: `Table ${++n}`, x: 1600 + S + stagger, y: 300 + r * S });
+            const stagger = r % 2 === 1 ? -40 : 0;
+            t.push({ ...round8, name: `Table ${++n}`, x: 1180 + stagger, y: 220 + r * S });
+            t.push({ ...round8, name: `Table ${++n}`, x: 1380 + stagger, y: 220 + r * S });
           }
           return t.slice(0, 20);
         })(),
       ],
       zones: [
-        { type: 'stage', label: 'Stage / DJ', width: 400, height: 100, x: 950, y: 1750, color: '#e0e7ff' },
-        { type: 'dancefloor', label: 'Dance Floor', width: 420, height: 400, x: 940, y: 650, color: '#fef3c7' },
+        { type: 'stage', label: 'Stage / DJ', width: 350, height: 90, x: 630, y: 1350, color: '#e0e7ff' },
+        { type: 'dancefloor', label: 'Dance Floor', width: 360, height: 360, x: 620, y: 450, color: '#fef3c7' },
       ],
     },
     {
@@ -1115,25 +1113,25 @@ const VENUE_LAYOUTS = (() => {
       description: 'Head table at top, stage at bottom, staggered estate tables on sides',
       icon: '🍽️',
       tables: [
-        { name: 'Head Table', shape: 'head-table', capacity: 14, width: 360, height: 60, x: 1000, y: 80 },
+        { name: 'Head Table', shape: 'head-table', capacity: 14, width: 360, height: 60, x: 650, y: 60 },
         // Left side: 3 staggered estate tables
-        { name: 'Estate 1', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 100, y: 350 },
-        { name: 'Estate 2', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 160, y: 600 },
-        { name: 'Estate 3', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 100, y: 850 },
+        { name: 'Estate 1', shape: 'rectangle', capacity: 16, width: 280, height: 70, x: 80, y: 250 },
+        { name: 'Estate 2', shape: 'rectangle', capacity: 16, width: 280, height: 70, x: 130, y: 450 },
+        { name: 'Estate 3', shape: 'rectangle', capacity: 16, width: 280, height: 70, x: 80, y: 650 },
         // Right side: 3 staggered estate tables
-        { name: 'Estate 4', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 1900, y: 350 },
-        { name: 'Estate 5', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 1840, y: 600 },
-        { name: 'Estate 6', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 1900, y: 850 },
-        // Round tables near head table area
+        { name: 'Estate 4', shape: 'rectangle', capacity: 16, width: 280, height: 70, x: 1280, y: 250 },
+        { name: 'Estate 5', shape: 'rectangle', capacity: 16, width: 280, height: 70, x: 1230, y: 450 },
+        { name: 'Estate 6', shape: 'rectangle', capacity: 16, width: 280, height: 70, x: 1280, y: 650 },
+        // Round tables below dance floor
         ...Array.from({ length: 6 }, (_, i) => ({
           ...round10, name: `Table ${i + 1}`,
-          x: 200 + i * 350, y: 1200,
+          x: 120 + i * 280, y: 950,
         })),
       ],
       zones: [
-        { type: 'stage', label: 'Stage / DJ', width: 400, height: 100, x: 980, y: 1550, color: '#e0e7ff' },
-        { type: 'dancefloor', label: 'Dance Floor', width: 500, height: 400, x: 930, y: 450, color: '#fef3c7' },
-        { type: 'bar', label: 'Bar', width: 200, height: 70, x: 100, y: 1550, color: '#dbeafe' },
+        { type: 'stage', label: 'Stage / DJ', width: 350, height: 90, x: 660, y: 1200, color: '#e0e7ff' },
+        { type: 'dancefloor', label: 'Dance Floor', width: 400, height: 350, x: 630, y: 300, color: '#fef3c7' },
+        { type: 'bar', label: 'Bar', width: 180, height: 60, x: 80, y: 1200, color: '#dbeafe' },
       ],
     },
     {
@@ -1141,35 +1139,34 @@ const VENUE_LAYOUTS = (() => {
       description: 'Head table at top, stage/DJ at bottom, staggered tables left & right of dance floor',
       icon: '🪷',
       tables: [
-        // Head table at top
-        { name: 'Head Table', shape: 'head-table', capacity: 14, width: 400, height: 60, x: 1000, y: 80 },
+        { name: 'Head Table', shape: 'head-table', capacity: 14, width: 400, height: 60, x: 750, y: 60 },
         ...(() => {
           const t = []; let n = 0;
           // Left side — 3 staggered columns × 7 rows
           for (let r = 0; r < 7; r++) {
-            const stagger = r % 2 === 1 ? 55 : 0;
-            t.push({ ...round10, name: `Table ${++n}`, x: 80 + stagger, y: 350 + r * 250 });
-            t.push({ ...round10, name: `Table ${++n}`, x: 80 + 250 + stagger, y: 350 + r * 250 });
-            t.push({ ...round10, name: `Table ${++n}`, x: 80 + 500 + stagger, y: 350 + r * 250 });
+            const stagger = r % 2 === 1 ? 45 : 0;
+            t.push({ ...round10, name: `Table ${++n}`, x: 60 + stagger, y: 250 + r * 210 });
+            t.push({ ...round10, name: `Table ${++n}`, x: 250 + stagger, y: 250 + r * 210 });
+            t.push({ ...round10, name: `Table ${++n}`, x: 440 + stagger, y: 250 + r * 210 });
           }
           // Right side — 3 staggered columns × 7 rows
           for (let r = 0; r < 7; r++) {
-            const stagger = r % 2 === 1 ? -55 : 0;
-            t.push({ ...round10, name: `Table ${++n}`, x: 1700 + stagger, y: 350 + r * 250 });
-            t.push({ ...round10, name: `Table ${++n}`, x: 1700 + 250 + stagger, y: 350 + r * 250 });
-            t.push({ ...round10, name: `Table ${++n}`, x: 1700 + 500 + stagger, y: 350 + r * 250 });
+            const stagger = r % 2 === 1 ? -45 : 0;
+            t.push({ ...round10, name: `Table ${++n}`, x: 1360 + stagger, y: 250 + r * 210 });
+            t.push({ ...round10, name: `Table ${++n}`, x: 1550 + stagger, y: 250 + r * 210 });
+            t.push({ ...round10, name: `Table ${++n}`, x: 1740 + stagger, y: 250 + r * 210 });
           }
           return t.slice(0, 40);
         })(),
       ],
       zones: [
-        { type: 'stage', label: 'Stage', width: 500, height: 120, x: 950, y: 2150, color: '#fee2e2' },
-        { type: 'dj', label: 'DJ', width: 140, height: 70, x: 1130, y: 2000, color: '#e0e7ff' },
-        { type: 'dancefloor', label: 'Dance Floor', width: 550, height: 550, x: 920, y: 750, color: '#fef3c7' },
-        { type: 'bar', label: 'Bar', width: 200, height: 70, x: 80, y: 2150, color: '#dbeafe' },
-        { type: 'desserts', label: 'Desserts', width: 180, height: 80, x: 2400, y: 2150, color: '#fef9c3' },
-        { type: 'gifts', label: 'Gifts & Cards', width: 150, height: 90, x: 2400, y: 80, color: '#fce7f3' },
-        { type: 'photo', label: 'Photo Booth', width: 150, height: 100, x: 80, y: 80, color: '#f3e8ff' },
+        { type: 'stage', label: 'Stage', width: 450, height: 100, x: 730, y: 1800, color: '#fee2e2' },
+        { type: 'dj', label: 'DJ', width: 130, height: 60, x: 890, y: 1680, color: '#e0e7ff' },
+        { type: 'dancefloor', label: 'Dance Floor', width: 460, height: 460, x: 720, y: 550, color: '#fef3c7' },
+        { type: 'bar', label: 'Bar', width: 180, height: 60, x: 60, y: 1800, color: '#dbeafe' },
+        { type: 'desserts', label: 'Desserts', width: 160, height: 60, x: 1750, y: 1800, color: '#fef9c3' },
+        { type: 'gifts', label: 'Gifts & Cards', width: 140, height: 70, x: 1750, y: 60, color: '#fce7f3' },
+        { type: 'photo', label: 'Photo Booth', width: 140, height: 80, x: 60, y: 60, color: '#f3e8ff' },
       ],
     },
     {
@@ -1177,20 +1174,20 @@ const VENUE_LAYOUTS = (() => {
       description: 'Sweetheart table at top, staggered tables left & right of dance floor',
       icon: '💕',
       tables: [
-        { name: 'Sweetheart', shape: 'round', capacity: 2, width: 70, height: 70, x: 900, y: 80 },
+        { name: 'Sweetheart', shape: 'round', capacity: 2, width: 70, height: 70, x: 650, y: 60 },
         // Left staggered (5)
         ...Array.from({ length: 5 }, (_, i) => ({
           ...round8, name: `Table ${i + 1}`,
-          x: 300 + (i % 2 === 1 ? 50 : 0), y: 300 + i * 260,
+          x: 150 + (i % 2 === 1 ? 40 : 0), y: 220 + i * S,
         })),
         // Right staggered (5)
         ...Array.from({ length: 5 }, (_, i) => ({
           ...round8, name: `Table ${i + 6}`,
-          x: 1400 - (i % 2 === 1 ? 50 : 0), y: 300 + i * 260,
+          x: 1050 - (i % 2 === 1 ? 40 : 0), y: 220 + i * S,
         })),
       ],
       zones: [
-        { type: 'dancefloor', label: 'Dance Floor', width: 350, height: 350, x: 730, y: 500, color: '#fef3c7' },
+        { type: 'dancefloor', label: 'Dance Floor', width: 320, height: 320, x: 540, y: 350, color: '#fef3c7' },
       ],
     },
     {
@@ -1198,19 +1195,18 @@ const VENUE_LAYOUTS = (() => {
       description: 'Head table at top, stage/DJ at bottom, 3 estate tables in U around stage, staggered rounds on sides',
       icon: '👑',
       tables: [
-        // Head table at top
-        { name: 'Head Table', shape: 'head-table', capacity: 14, width: 400, height: 60, x: 1000, y: 80 },
+        { name: 'Head Table', shape: 'head-table', capacity: 14, width: 400, height: 60, x: 700, y: 60 },
         // 3 estate tables in U-shape around stage at bottom
-        { name: 'Estate Left', shape: 'rectangle', capacity: 14, width: 80, height: 350, x: 750, y: 1500 },
-        { name: 'Estate Center', shape: 'rectangle', capacity: 16, width: 400, height: 70, x: 1000, y: 1900 },
-        { name: 'Estate Right', shape: 'rectangle', capacity: 14, width: 80, height: 350, x: 1570, y: 1500 },
+        { name: 'Estate Left', shape: 'rectangle', capacity: 14, width: 70, height: 300, x: 550, y: 1200 },
+        { name: 'Estate Center', shape: 'rectangle', capacity: 16, width: 360, height: 70, x: 720, y: 1550 },
+        { name: 'Estate Right', shape: 'rectangle', capacity: 14, width: 70, height: 300, x: 1180, y: 1200 },
         // Left side staggered rounds (2 cols × 5 rows = 10)
         ...(() => {
           const t = []; let n = 0;
           for (let r = 0; r < 5; r++) {
-            const stagger = r % 2 === 1 ? 50 : 0;
-            t.push({ ...round10, name: `Table ${++n}`, x: 80 + stagger, y: 300 + r * 260 });
-            t.push({ ...round10, name: `Table ${++n}`, x: 80 + 260 + stagger, y: 300 + r * 260 });
+            const stagger = r % 2 === 1 ? 40 : 0;
+            t.push({ ...round10, name: `Table ${++n}`, x: 60 + stagger, y: 220 + r * S });
+            t.push({ ...round10, name: `Table ${++n}`, x: 260 + stagger, y: 220 + r * S });
           }
           return t;
         })(),
@@ -1218,19 +1214,18 @@ const VENUE_LAYOUTS = (() => {
         ...(() => {
           const t = []; let n = 10;
           for (let r = 0; r < 5; r++) {
-            const stagger = r % 2 === 1 ? -50 : 0;
-            t.push({ ...round10, name: `Table ${++n}`, x: 1750 + stagger, y: 300 + r * 260 });
-            t.push({ ...round10, name: `Table ${++n}`, x: 1750 + 260 + stagger, y: 300 + r * 260 });
+            const stagger = r % 2 === 1 ? -40 : 0;
+            t.push({ ...round10, name: `Table ${++n}`, x: 1400 + stagger, y: 220 + r * S });
+            t.push({ ...round10, name: `Table ${++n}`, x: 1600 + stagger, y: 220 + r * S });
           }
           return t;
         })(),
-        // 1 table flanking head table
-        { ...round8, name: 'Table 21', x: 550, y: 80 },
+        { ...round8, name: 'Table 21', x: 400, y: 60 },
       ],
       zones: [
-        { type: 'stage', label: 'Stage / DJ', width: 400, height: 120, x: 1000, y: 2050, color: '#e0e7ff' },
-        { type: 'dancefloor', label: 'Dance Floor', width: 500, height: 450, x: 950, y: 600, color: '#fef3c7' },
-        { type: 'bar', label: 'Bar', width: 200, height: 70, x: 80, y: 1900, color: '#dbeafe' },
+        { type: 'stage', label: 'Stage / DJ', width: 360, height: 100, x: 720, y: 1680, color: '#e0e7ff' },
+        { type: 'dancefloor', label: 'Dance Floor', width: 420, height: 380, x: 690, y: 420, color: '#fef3c7' },
+        { type: 'bar', label: 'Bar', width: 180, height: 60, x: 60, y: 1550, color: '#dbeafe' },
       ],
     },
     {
