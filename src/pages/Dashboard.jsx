@@ -54,7 +54,7 @@ export default function Dashboard() {
         <h1 className="text-2xl font-display font-bold text-gray-900">
           {activeWedding.coupleName1} & {activeWedding.coupleName2}
         </h1>
-        <p className="text-sm text-gray-400 mt-1">Your wedding at a glance</p>
+        <p className="text-sm text-gray-500 mt-1">Your wedding at a glance</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -100,14 +100,14 @@ function QuickStat({ icon: Icon, label, value, to }) {
   return (
     <button
       onClick={() => navigate(to)}
-      className="flex items-center gap-4 rounded-xl border border-gray-200/80 bg-white p-4 shadow-soft hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
+      className="group flex items-center gap-4 rounded-xl border border-gray-200/80 bg-white p-4 shadow-card hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-200 text-left"
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-wine-50">
+      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-wine-50 to-phera-50 group-hover:from-wine-100 group-hover:to-phera-100 transition-colors">
         <Icon size={20} className="text-wine-700" />
       </div>
       <div>
         <p className="text-2xl font-bold text-gray-900">{value}</p>
-        <p className="text-xs text-gray-400">{label}</p>
+        <p className="text-xs text-gray-500">{label}</p>
       </div>
     </button>
   );

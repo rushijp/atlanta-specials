@@ -6,7 +6,7 @@ import { Users, Calendar, Grid3X3, Mail, Camera, Trophy, ArrowRight, Check, Spar
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-ivory-50 font-body">
+    <div className="min-h-screen font-body">
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-5 max-w-7xl mx-auto">
         <div className="flex items-center gap-2.5">
@@ -14,13 +14,17 @@ export default function Landing() {
           <span className="text-xl font-display font-bold text-gray-900 tracking-tight">{APP_NAME}</span>
         </div>
         <div className="flex items-center gap-3">
-          <Link to="/login"><Button variant="ghost">Sign in</Button></Link>
+          <Link to="/login"><Button variant="ghost" className="link-flourish">Sign in</Button></Link>
           <Link to="/register"><Button>Start Planning</Button></Link>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="text-center px-6 pt-20 pb-24 max-w-4xl mx-auto animate-fade-in">
+      {/* Hero — warm gradient background */}
+      <section className="relative text-center px-6 pt-20 pb-28 max-w-4xl mx-auto animate-fade-in">
+        {/* Decorative warm radial behind hero */}
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-gradient-to-b from-wine-50/80 via-phera-50/40 to-transparent blur-3xl"></div>
+        </div>
         <p className="text-sm font-medium text-wine-600 tracking-wide uppercase mb-4">For weddings with 200, 500, or 1000+ guests</p>
         <h1 className="text-5xl md:text-6xl font-display font-bold text-gray-900 leading-[1.1] mb-6">
           The only planner built for<br />
@@ -32,7 +36,7 @@ export default function Landing() {
         </p>
         <div className="flex items-center justify-center gap-4">
           <Link to="/register">
-            <Button size="lg" className="shadow-glow">
+            <Button size="lg" className="shadow-glow hover:scale-[1.02] transition-transform">
               Start Planning Free <ArrowRight size={16} />
             </Button>
           </Link>
@@ -41,7 +45,7 @@ export default function Landing() {
       </section>
 
       {/* Social proof bar */}
-      <div className="border-y border-gray-200/60 bg-white/60 backdrop-blur">
+      <div className="border-y border-gray-200/60 bg-white/80 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-center gap-8 text-sm text-gray-500">
           <span className="flex items-center gap-1.5"><Check size={14} className="text-green-600" /> Multi-event support</span>
           <span className="flex items-center gap-1.5"><Check size={14} className="text-green-600" /> Family-group RSVPs</span>
@@ -50,8 +54,8 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* Features */}
-      <section className="px-6 py-20 max-w-6xl mx-auto">
+      {/* Features — warm cream background */}
+      <section className="px-6 py-20 max-w-6xl mx-auto section-warm">
         <div className="text-center mb-14">
           <h2 className="text-3xl font-display font-bold text-gray-900 mb-3">
             Every feature your shaadi actually needs
@@ -94,8 +98,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Real scenarios */}
-      <section className="px-6 py-20 max-w-5xl mx-auto">
+      {/* Real scenarios — blush tint */}
+      <section className="px-6 py-20 max-w-5xl mx-auto section-blush">
         <div className="text-center mb-14">
           <h2 className="text-3xl font-display font-bold text-gray-900 mb-3">
             Real problems we solve
@@ -123,7 +127,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* How it works */}
+      {/* How it works — white with warm accents */}
       <section className="px-6 py-20 bg-white border-y border-gray-100">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-display font-bold text-gray-900 text-center mb-14">
@@ -137,8 +141,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="px-6 py-20 max-w-3xl mx-auto">
+      {/* FAQ — warm cream */}
+      <section className="px-6 py-20 max-w-3xl mx-auto section-warm">
         <h2 className="text-3xl font-display font-bold text-gray-900 text-center mb-12">
           Questions
         </h2>
@@ -170,18 +174,20 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="text-center px-6 py-20 bg-gradient-to-br from-wine-800 to-wine-900">
-        <div className="max-w-2xl mx-auto">
+      {/* CTA — rich gradient */}
+      <section className="relative text-center px-6 py-24 bg-gradient-to-br from-wine-800 via-wine-900 to-gray-900 overflow-hidden">
+        {/* Decorative glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-phera-500/10 blur-3xl"></div>
+        <div className="relative max-w-2xl mx-auto">
           <Sparkles className="mx-auto mb-4 text-phera-400" size={28} />
           <h2 className="text-3xl font-display font-bold text-white mb-3">Your wedding deserves better than spreadsheets</h2>
           <p className="text-wine-200 mb-8 text-lg">Start free. Plan everything in one place.</p>
-          <Link to="/register"><Button variant="secondary" size="lg">Create Your Wedding <ArrowRight size={16} /></Button></Link>
+          <Link to="/register"><Button variant="secondary" size="lg" className="hover:scale-[1.02] transition-transform">Create Your Wedding <ArrowRight size={16} /></Button></Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="text-center px-6 py-8 text-sm text-gray-400 bg-gray-50">
+      <footer className="text-center px-6 py-8 text-sm text-gray-400 bg-gray-50 border-t border-gray-100">
         <p>&copy; {new Date().getFullYear()} {APP_NAME}. Built for Indian weddings.</p>
       </footer>
     </div>
@@ -190,8 +196,8 @@ export default function Landing() {
 
 function FeatureCard({ icon: Icon, title, description }) {
   return (
-    <div className="group rounded-2xl border border-gray-200/80 bg-white p-6 shadow-soft hover:shadow-md transition-all duration-200">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-wine-50 mb-4 group-hover:bg-wine-100 transition-colors">
+    <div className="group rounded-2xl border border-gray-200/80 bg-white p-6 shadow-card hover:shadow-lifted hover:-translate-y-1 transition-all duration-300">
+      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-wine-50 to-phera-50 mb-4 group-hover:from-wine-100 group-hover:to-phera-100 transition-colors">
         <Icon size={20} className="text-wine-700" />
       </div>
       <h3 className="text-base font-semibold text-gray-900 mb-2">{title}</h3>
@@ -202,15 +208,15 @@ function FeatureCard({ icon: Icon, title, description }) {
 
 function ScenarioCard({ number, title, problem, solution }) {
   return (
-    <div className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-soft">
-      <span className="text-xs font-bold text-wine-300 tracking-wider">{number}</span>
-      <h3 className="text-base font-semibold text-gray-900 mt-1 mb-4">{title}</h3>
+    <div className="rounded-2xl border border-gray-200/80 bg-white p-6 shadow-card hover:shadow-lifted transition-all duration-300">
+      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-wine-50 text-xs font-bold text-wine-600">{number}</span>
+      <h3 className="text-base font-semibold text-gray-900 mt-3 mb-4">{title}</h3>
       <div className="mb-4">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">The mess</p>
+        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">The mess</p>
         <p className="text-sm text-gray-500">{problem}</p>
       </div>
-      <div>
-        <p className="text-xs font-semibold text-wine-600 uppercase tracking-wider mb-1">With Phera</p>
+      <div className="pt-3 border-t border-gray-100">
+        <p className="text-[11px] font-semibold text-wine-600 uppercase tracking-wider mb-1">With Phera</p>
         <p className="text-sm text-gray-700 leading-relaxed">{solution}</p>
       </div>
     </div>
@@ -220,7 +226,7 @@ function ScenarioCard({ number, title, problem, solution }) {
 function StepCard({ step, title, description }) {
   return (
     <div>
-      <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-wine-50 text-wine-700 font-display font-bold text-lg mb-4">
+      <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-wine-100 to-phera-100 text-wine-700 font-display font-bold text-xl mb-4 shadow-sm">
         {step}
       </div>
       <h3 className="text-base font-semibold text-gray-900 mb-2">{title}</h3>

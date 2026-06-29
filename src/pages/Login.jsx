@@ -37,8 +37,12 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-wine-50 to-amber-50 px-4">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center px-4 relative overflow-hidden">
+      {/* Warm radial background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-wine-50 via-ivory-100 to-phera-50/30"></div>
+      <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-wine-100/50 blur-3xl"></div>
+      <div className="absolute bottom-1/4 left-1/4 w-[300px] h-[300px] rounded-full bg-phera-100/40 blur-3xl"></div>
+      <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-wine-700 text-white font-bold text-xl mb-4">
             P
@@ -47,7 +51,7 @@ export default function Login() {
           <p className="text-sm text-gray-500 mt-1">{APP_TAGLINE}</p>
         </div>
 
-        <div className="rounded-2xl bg-white p-8 shadow-lg">
+        <div className="rounded-2xl bg-white/90 backdrop-blur-sm p-8 shadow-lifted border border-white/60">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Welcome back</h2>
 
           {error && (

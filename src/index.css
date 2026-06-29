@@ -1,2 +1,59 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
+
+/* Global warmth */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Branded text selection */
+::selection {
+  background: #ab204d;
+  color: #fff;
+}
+
+/* Animated underline flourish for nav/links */
+.link-flourish {
+  position: relative;
+  text-decoration: none;
+}
+.link-flourish::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background: currentColor;
+  transition: width 0.25s ease;
+}
+.link-flourish:hover::after {
+  width: 100%;
+}
+
+/* Image hover zoom (Ken Burns lite) */
+.img-zoom {
+  overflow: hidden;
+}
+.img-zoom img {
+  transition: transform 0.5s ease-in-out;
+}
+.img-zoom:hover img {
+  transform: scale(1.06);
+}
+
+/* Warm section backgrounds */
+.section-warm {
+  background-color: #fff8f3;
+}
+.section-blush {
+  background-color: #fff5f7;
+}
+.section-cream {
+  background-color: #fefdfb;
+}
