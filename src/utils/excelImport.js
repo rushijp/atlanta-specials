@@ -19,17 +19,12 @@ const DEFAULT_COLUMN_MAP = {
   'side': 'side',
   'relation': 'relation',
   'relationship': 'relation',
-  'table': 'tableNumber',
-  'table number': 'tableNumber',
-  'table #': 'tableNumber',
   'dietary': 'dietary',
   'diet': 'dietary',
   'food': 'dietary',
   'veg/non-veg': 'dietary',
   'notes': 'notes',
   'tags': '_tags',
-  'plus one': 'plusOne',
-  '+1': 'plusOne',
 };
 
 /**
@@ -103,11 +98,6 @@ export function mapRowsToGuests(rows, columnMapping) {
         guest.lastName = parts.slice(1).join(' ') || '';
       } else if (field === '_tags') {
         guest.tags = value.split(/[,;]/).map((t) => t.trim()).filter(Boolean);
-      } else if (field === 'plusOne') {
-        guest.plusOne = ['yes', 'true', '1', 'y'].includes(value.toLowerCase());
-      } else if (field === 'tableNumber') {
-        const num = parseInt(value, 10);
-        guest.tableNumber = isNaN(num) ? null : num;
       } else if (field === 'side') {
         guest.side = value.toLowerCase().includes('groom') ? 'groom' : 'bride';
       } else if (field === 'dietary') {
@@ -154,12 +144,8 @@ export function exportGuestsToExcel(guests, fileName = 'guest-list.xlsx') {
     'Side': g.side,
     'Relation': g.relation,
     'Dietary': g.dietary,
-    'Table #': g.tableNumber || '',
-    'Plus One': g.plusOne ? 'Yes' : 'No',
     'Tags': (g.tags || []).join(', '),
     'Notes': g.notes,
-    'Hotel Needed': g.needsHotel ? 'Yes' : 'No',
-    'Traveling From': g.travelFrom,
   }));
 
   const ws = XLSX.utils.json_to_sheet(data);
@@ -182,12 +168,8 @@ export function downloadGuestTemplate() {
       'Side': 'Bride',
       'Relation': 'Cousin',
       'Dietary': 'Vegetarian',
-      'Table #': 1,
-      'Plus One': 'No',
       'Tags': 'VIP',
       'Notes': '',
-      'Hotel Needed': 'Yes',
-      'Traveling From': 'Mumbai',
     },
     {
       'First Name': 'Raj',
@@ -198,12 +180,8 @@ export function downloadGuestTemplate() {
       'Side': 'Bride',
       'Relation': 'Uncle',
       'Dietary': 'Vegetarian',
-      'Table #': 1,
-      'Plus One': 'Yes',
       'Tags': 'VIP, Elderly',
       'Notes': 'Needs wheelchair accessible seating',
-      'Hotel Needed': 'Yes',
-      'Traveling From': 'Mumbai',
     },
     {
       'First Name': 'Anita',
@@ -214,12 +192,8 @@ export function downloadGuestTemplate() {
       'Side': 'Groom',
       'Relation': 'Family Friend',
       'Dietary': 'Jain (No onion/garlic)',
-      'Table #': 3,
-      'Plus One': 'No',
       'Tags': '',
       'Notes': '',
-      'Hotel Needed': 'No',
-      'Traveling From': '',
     },
     {
       'First Name': 'Vikram',
@@ -230,12 +204,8 @@ export function downloadGuestTemplate() {
       'Side': 'Groom',
       'Relation': 'College Friend',
       'Dietary': 'Non-Vegetarian',
-      'Table #': '',
-      'Plus One': 'Yes',
       'Tags': 'College Friend',
       'Notes': 'Coming with wife Neha',
-      'Hotel Needed': 'Yes',
-      'Traveling From': 'Chicago',
     },
     {
       'First Name': 'Sita',
@@ -246,12 +216,8 @@ export function downloadGuestTemplate() {
       'Side': 'Bride',
       'Relation': 'Aunt',
       'Dietary': 'Vegan',
-      'Table #': 2,
-      'Plus One': 'No',
       'Tags': 'Elderly',
-      'Notes': 'Needs vegetarian + no dairy options',
-      'Hotel Needed': 'Yes',
-      'Traveling From': 'Hyderabad',
+      'Notes': 'No dairy options',
     },
   ];
 
@@ -261,8 +227,7 @@ export function downloadGuestTemplate() {
   ws['!cols'] = [
     { wch: 14 }, { wch: 14 }, { wch: 24 }, { wch: 12 },
     { wch: 20 }, { wch: 8 }, { wch: 16 }, { wch: 22 },
-    { wch: 8 }, { wch: 10 }, { wch: 18 }, { wch: 36 },
-    { wch: 14 }, { wch: 16 },
+    { wch: 18 }, { wch: 36 },
   ];
 
   const wb = XLSX.utils.book_new();

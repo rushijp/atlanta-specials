@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { DndContext, DragOverlay, useSensor, useSensors, PointerSensor, pointerWithin } from '@dnd-kit/core';
 import { useWedding } from '../../contexts/WeddingContext';
 import { subscribeToGuests } from '../../services/guestService';
 import { subscribeToEvents } from '../../services/eventService';
 import { subscribeToSeating, saveSeating } from '../../services/seatingService';
 import { Button, Badge, Modal, Input } from '../ui';
-import { Plus, ZoomIn, ZoomOut, Printer, Users, RotateCcw, Filter, Save } from 'lucide-react';
-import { TABLE_DEFAULTS, TABLE_SHAPES } from '../../config/constants';
+import { Plus, ZoomIn, ZoomOut, Printer, Users, RotateCcw, Filter, Save, Upload, Image, FileSpreadsheet } from 'lucide-react';
+import { TABLE_DEFAULTS, TABLE_PRESETS } from '../../config/constants';
 import TableComponent from './Table';
 import GuestSidebar from './GuestSidebar';
 
@@ -23,6 +23,13 @@ export default function SeatingCanvas() {
   const [isDragging, setIsDragging] = useState(false);
   const [draggedGuest, setDraggedGuest] = useState(null);
   const [showAddTable, setShowAddTable] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [showCustom, setShowCustom] = useState(false);
+  const [showPresets, setShowPresets] = useState(false);
+  const [customTable, setCustomTable] = useState({ name: '', shape: 'round', capacity: 10, width: 120, height: 120 });
+  const [venueImage, setVenueImage] = useState(null);
+  const [venueOpacity, setVenueOpacity] = useState(0.3);
+  const [zones, setZones] = useState([]); // non-seatable elements: dance floor, DJ, bar, etc.
   const [filterSide, setFilterSide] = useState('all');
   const [filterFamily, setFilterFamily] = useState('all');
   const [hasChanges, setHasChanges] = useState(false);
@@ -46,6 +53,9 @@ export default function SeatingCanvas() {
     return subscribeToSeating(activeWedding.id, selectedEventId, (data) => {
       setTables(data.tables || []);
       setRules(data.rules || []);
+      setZones(data.zones || []);
+      if (data.venueImage) setVenueImage(data.venueImage);
+      if (data.venueOpacity !== undefined) setVenueOpacity(data.venueOpacity);
     });
   }, [activeWedding, selectedEventId]);
 
@@ -72,9 +82,9 @@ export default function SeatingCanvas() {
   // Save to Firestore
   const handleSave = useCallback(async () => {
     if (!activeWedding || !selectedEventId) return;
-    await saveSeating(activeWedding.id, selectedEventId, { tables, rules });
+    await saveSeating(activeWedding.id, selectedEventId, { tables, rules, zones, venueImage: venueImage || null, venueOpacity });
     setHasChanges(false);
-  }, [activeWedding, selectedEventId, tables, rules]);
+  }, [activeWedding, selectedEventId, tables, rules, zones, venueImage, venueOpacity]);
 
   // Auto-save on changes (debounced)
   useEffect(() => {
@@ -83,16 +93,16 @@ export default function SeatingCanvas() {
     return () => clearTimeout(timer);
   }, [hasChanges, handleSave]);
 
-  // Add table
-  const addTable = (shape) => {
-    const defaults = TABLE_DEFAULTS[shape];
+  // Add table — accepts a preset or custom config
+  const addTable = (config) => {
+    const defaults = TABLE_DEFAULTS[config.shape] || TABLE_DEFAULTS.round;
     const newTable = {
       id: uid(),
-      name: `Table ${tables.length + 1}`,
-      shape,
-      capacity: defaults.capacity,
-      width: defaults.width,
-      height: defaults.height,
+      name: config.name || `Table ${tables.length + 1}`,
+      shape: config.shape || 'round',
+      capacity: config.capacity || defaults.capacity,
+      width: config.width || defaults.width,
+      height: config.height || defaults.height,
       x: 100 + Math.random() * 400,
       y: 100 + Math.random() * 300,
       assignedGuests: [],
@@ -100,6 +110,57 @@ export default function SeatingCanvas() {
     setTables((prev) => [...prev, newTable]);
     setHasChanges(true);
     setShowAddTable(false);
+  };
+
+  // Bulk add tables from import
+  const addTablesBatch = (configs) => {
+    const newTables = configs.map((config, i) => ({
+      id: uid(),
+      name: config.name || `Table ${tables.length + i + 1}`,
+      shape: config.shape || 'round',
+      capacity: config.capacity || 10,
+      width: config.width || TABLE_DEFAULTS[config.shape]?.width || 120,
+      height: config.height || TABLE_DEFAULTS[config.shape]?.height || 120,
+      x: 80 + (i % 6) * 200,
+      y: 80 + Math.floor(i / 6) * 200,
+      assignedGuests: [],
+    }));
+    setTables((prev) => [...prev, ...newTables]);
+    setHasChanges(true);
+    setShowImport(false);
+  };
+
+  // Add zone (non-seatable element)
+  const addZone = (zone) => {
+    setZones((prev) => [...prev, {
+      id: uid(),
+      label: zone.label || 'Zone',
+      type: zone.type || 'dancefloor', // dancefloor | dj | bar | gifts | stage | dessert | photo | custom
+      width: zone.width || 200,
+      height: zone.height || 200,
+      x: 400 + Math.random() * 200,
+      y: 200 + Math.random() * 200,
+      color: zone.color || '#f3f4f6',
+    }]);
+    setHasChanges(true);
+  };
+
+  const removeZone = (zoneId) => {
+    setZones((prev) => prev.filter((z) => z.id !== zoneId));
+    setHasChanges(true);
+  };
+
+  const updateZone = (zoneId, updates) => {
+    setZones((prev) => prev.map((z) => z.id === zoneId ? { ...z, ...updates } : z));
+    setHasChanges(true);
+  };
+
+  // Apply venue preset layout
+  const applyPreset = (preset) => {
+    setTables(preset.tables.map((t, i) => ({ ...t, id: uid(), assignedGuests: [] })));
+    setZones(preset.zones.map((z) => ({ ...z, id: uid() })));
+    setHasChanges(true);
+    setShowPresets(false);
   };
 
   // Remove table
@@ -221,35 +282,87 @@ export default function SeatingCanvas() {
             <div className="w-px h-6 bg-gray-200" />
 
             <Button size="sm" onClick={() => setShowAddTable(true)}>
-              <Plus size={14} /> Add Table
+              <Plus size={14} /> Table
             </Button>
+
+            {/* Zone dropdown */}
+            <div className="relative group">
+              <Button variant="outline" size="sm">
+                <Plus size={14} /> Zone ▾
+              </Button>
+              <div className="hidden group-hover:block absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20 w-44">
+                {ZONE_PRESETS.map((z) => (
+                  <button key={z.type} onClick={() => addZone(z)}
+                    className="w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 flex items-center gap-2">
+                    <span>{z.icon}</span> {z.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Button variant="outline" size="sm" onClick={() => setShowPresets(true)}>
+              Layout Presets
+            </Button>
+
+            <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
+              <Upload size={14} /> Import
+            </Button>
+
+            {/* Venue floor plan */}
+            <label className="cursor-pointer">
+              <input type="file" accept="image/*" className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = (ev) => { setVenueImage(ev.target.result); setHasChanges(true); };
+                  reader.readAsDataURL(file);
+                  e.target.value = '';
+                }}
+              />
+              <span className="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 cursor-pointer">
+                <Image size={14} /> {venueImage ? 'Change' : 'Floor Plan'}
+              </span>
+            </label>
+
+            {venueImage && (
+              <>
+                <input type="range" min="5" max="80" value={venueOpacity * 100}
+                  onChange={(e) => { setVenueOpacity(parseInt(e.target.value) / 100); setHasChanges(true); }}
+                  className="w-16 h-1 accent-rose-500" title={`Opacity: ${Math.round(venueOpacity * 100)}%`} />
+                <Button variant="outline" size="sm" onClick={() => { setVenueImage(null); setHasChanges(true); }}>
+                  ✕ BG
+                </Button>
+              </>
+            )}
 
             {hasChanges && (
               <Button size="sm" onClick={handleSave}>
                 <Save size={14} /> Save
               </Button>
             )}
-
-            <Button variant="outline" size="sm" onClick={() => window.print()}>
-              <Printer size={14} />
-            </Button>
           </div>
 
           {/* Canvas */}
-          <div
-            className="flex-1 rounded-xl border border-gray-200 bg-white overflow-auto relative"
-          >
+          <div className="flex-1 rounded-xl border border-gray-200 bg-white overflow-auto relative">
             {events.length === 0 ? (
               <div className="flex items-center justify-center h-full text-gray-400">
                 <p>Add events first to start seating</p>
               </div>
-            ) : tables.length === 0 ? (
+            ) : tables.length === 0 && zones.length === 0 && !venueImage ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-3">
                 <Grid3XIcon />
-                <p>Add tables to get started</p>
-                <Button size="sm" onClick={() => setShowAddTable(true)}>
-                  <Plus size={14} /> Add Table
-                </Button>
+                <p className="font-medium">Set up your venue layout</p>
+                <p className="text-xs max-w-sm text-center">Upload a venue floor plan, pick a preset layout, or add tables one by one.</p>
+                <div className="flex gap-2 flex-wrap justify-center">
+                  <Button size="sm" onClick={() => setShowPresets(true)}>Layout Presets</Button>
+                  <Button size="sm" variant="outline" onClick={() => setShowAddTable(true)}>
+                    <Plus size={14} /> Add Table
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setShowImport(true)}>
+                    <Upload size={14} /> Import
+                  </Button>
+                </div>
               </div>
             ) : (
               <div
@@ -263,6 +376,22 @@ export default function SeatingCanvas() {
                   minHeight: '2000px',
                 }}
               >
+                {/* Venue floor plan background */}
+                {venueImage && (
+                  <img src={venueImage} alt="Venue layout"
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', opacity: venueOpacity, pointerEvents: 'none', userSelect: 'none' }}
+                    draggable={false} />
+                )}
+
+                {/* Zones (dance floor, DJ, bar, etc.) */}
+                {zones.map((zone) => (
+                  <ZoneElement key={zone.id} zone={zone}
+                    onUpdate={(updates) => updateZone(zone.id, updates)}
+                    onRemove={() => removeZone(zone.id)}
+                    zoom={zoom} />
+                ))}
+
+                {/* Tables */}
                 {tables.map((table) => (
                   <TableComponent
                     key={table.id}
@@ -271,7 +400,14 @@ export default function SeatingCanvas() {
                     onUpdate={(updates) => updateTable(table.id, updates)}
                     onRemove={() => removeTable(table.id)}
                     onDrag={(dx, dy) => handleTableDrag(table.id, dx, dy)}
-                    rules={rules}
+                    onRemoveGuest={(guestId) => {
+                      setTables((prev) => prev.map((t) =>
+                        t.id === table.id
+                          ? { ...t, assignedGuests: (t.assignedGuests || []).filter((id) => id !== guestId) }
+                          : t
+                      ));
+                      setHasChanges(true);
+                    }}
                   />
                 ))}
               </div>
@@ -281,8 +417,10 @@ export default function SeatingCanvas() {
           {/* Stats bar */}
           <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
             <span>{tables.length} tables</span>
+            {zones.length > 0 && <span>{zones.length} zones</span>}
             <span>{assignedGuestIds.size} / {guests.length} guests seated</span>
             <span>{guests.length - assignedGuestIds.size} unassigned</span>
+            <span>{tables.reduce((s, t) => s + t.capacity, 0)} total capacity</span>
             {hasChanges && <span className="text-amber-600">● Unsaved changes</span>}
           </div>
         </div>
@@ -297,37 +435,298 @@ export default function SeatingCanvas() {
         )}
       </DragOverlay>
 
-      {/* Add table modal */}
-      <Modal open={showAddTable} onClose={() => setShowAddTable(false)} title="Add Table" size="sm">
-        <div className="space-y-3">
-          <p className="text-sm text-gray-600">Choose a table shape:</p>
-          <div className="grid grid-cols-3 gap-3">
-            <TableShapeButton shape="round" label="Round" seats="10" onClick={() => addTable('round')} />
-            <TableShapeButton shape="rectangle" label="Rectangle" seats="8" onClick={() => addTable('rectangle')} />
-            <TableShapeButton shape="square" label="Square" seats="4" onClick={() => addTable('square')} />
+      {/* Add Table modal — presets + custom */}
+      <Modal open={showAddTable} onClose={() => setShowAddTable(false)} title="Add Table" size="md">
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">Choose a preset or create a custom table:</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {TABLE_PRESETS.map((preset, i) => (
+              <button
+                key={i}
+                onClick={() => addTable(preset)}
+                className="flex items-center gap-2 rounded-xl border border-gray-200 p-3 hover:bg-rose-50 hover:border-rose-200 transition-colors text-left"
+              >
+                <span className="text-xl flex-shrink-0">{preset.icon}</span>
+                <div>
+                  <div className="text-sm font-medium text-gray-900">{preset.label}</div>
+                  <div className="text-xs text-gray-400">{preset.capacity} seats · {preset.width}×{preset.height}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="border-t border-gray-100 pt-3">
+            <button
+              onClick={() => { setShowAddTable(false); setShowCustom(true); }}
+              className="w-full text-center text-sm text-rose-600 font-medium hover:text-rose-700 py-2"
+            >
+              + Create Custom Table
+            </button>
           </div>
         </div>
+      </Modal>
+
+      {/* Custom Table modal */}
+      <Modal open={showCustom} onClose={() => setShowCustom(false)} title="Custom Table" size="sm">
+        <div className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Table Name</label>
+            <input
+              value={customTable.name}
+              onChange={(e) => setCustomTable({ ...customTable, name: e.target.value })}
+              placeholder={`Table ${tables.length + 1}`}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Shape</label>
+            <select
+              value={customTable.shape}
+              onChange={(e) => {
+                const shape = e.target.value;
+                const defaults = TABLE_DEFAULTS[shape] || TABLE_DEFAULTS.round;
+                setCustomTable({ ...customTable, shape, width: defaults.width, height: defaults.height, capacity: defaults.capacity });
+              }}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            >
+              <option value="round">Round</option>
+              <option value="rectangle">Rectangle</option>
+              <option value="square">Square</option>
+              <option value="oval">Oval</option>
+              <option value="u-shape">U-Shape</option>
+              <option value="head-table">Head Table</option>
+              <option value="cocktail">Cocktail/Standing</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Seats</label>
+              <input type="number" min="1" max="50" value={customTable.capacity}
+                onChange={(e) => setCustomTable({ ...customTable, capacity: parseInt(e.target.value) || 1 })}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Width</label>
+              <input type="number" min="40" max="500" value={customTable.width}
+                onChange={(e) => setCustomTable({ ...customTable, width: parseInt(e.target.value) || 100 })}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Height</label>
+              <input type="number" min="40" max="500" value={customTable.height}
+                onChange={(e) => setCustomTable({ ...customTable, height: parseInt(e.target.value) || 100 })}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            </div>
+          </div>
+          <Button className="w-full" onClick={() => { addTable(customTable); setShowCustom(false); }}>
+            Add Table
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Import Layout modal */}
+      <Modal open={showImport} onClose={() => setShowImport(false)} title="Import Seating Layout" size="md">
+        <ImportLayoutPanel onImport={addTablesBatch} onClose={() => setShowImport(false)} existingCount={tables.length} />
+      </Modal>
+
+      {/* Venue Layout Presets modal */}
+      <Modal open={showPresets} onClose={() => setShowPresets(false)} title="Venue Layout Presets" size="lg">
+        <VenuePresetsPanel onApply={applyPreset} onClose={() => setShowPresets(false)} />
       </Modal>
     </DndContext>
   );
 }
 
-function TableShapeButton({ shape, label, seats, onClick }) {
-  const shapeStyles = {
-    round: 'rounded-full w-16 h-16',
-    rectangle: 'rounded-lg w-20 h-12',
-    square: 'rounded-lg w-14 h-14',
+function ImportLayoutPanel({ onImport, onClose, existingCount }) {
+  const [mode, setMode] = useState('quick'); // 'quick' | 'excel' | 'text'
+  const [quickCount, setQuickCount] = useState(10);
+  const [quickShape, setQuickShape] = useState('round');
+  const [quickCapacity, setQuickCapacity] = useState(10);
+  const [textInput, setTextInput] = useState('');
+  const [fileData, setFileData] = useState(null);
+  const [preview, setPreview] = useState([]);
+
+  // Quick-add: generate N tables of same shape
+  const handleQuickAdd = () => {
+    const configs = Array.from({ length: quickCount }, (_, i) => ({
+      name: `Table ${existingCount + i + 1}`,
+      shape: quickShape,
+      capacity: quickCapacity,
+    }));
+    onImport(configs);
+  };
+
+  // Parse text input (CSV-like: "Table 1, round, 10" per line)
+  const handleTextParse = () => {
+    const lines = textInput.trim().split('\n').filter(Boolean);
+    const configs = lines.map((line) => {
+      const parts = line.split(/[,\t]/).map((s) => s.trim());
+      const name = parts[0] || '';
+      const shape = (parts[1] || 'round').toLowerCase();
+      const capacity = parseInt(parts[2]) || 10;
+      const validShape = TABLE_DEFAULTS[shape] ? shape : 'round';
+      return { name, shape: validShape, capacity };
+    });
+    setPreview(configs);
+  };
+
+  // Handle Excel file
+  const handleFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const XLSX = await import('xlsx');
+      const data = await file.arrayBuffer();
+      const wb = XLSX.read(data);
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+      // Skip header row if it looks like headers
+      const start = rows[0]?.some((c) => typeof c === 'string' && /name|table/i.test(c)) ? 1 : 0;
+      const configs = rows.slice(start).filter((r) => r[0]).map((row) => {
+        const name = String(row[0] || '').trim();
+        const shape = (String(row[1] || 'round')).toLowerCase().trim();
+        const capacity = parseInt(row[2]) || 10;
+        const validShape = TABLE_DEFAULTS[shape] ? shape : 'round';
+        return { name, shape: validShape, capacity };
+      });
+
+      setFileData(file.name);
+      setPreview(configs);
+    } catch (err) {
+      console.error('File parse error:', err);
+    }
   };
 
   return (
-    <button
-      onClick={onClick}
-      className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 p-4 hover:bg-rose-50 hover:border-rose-200 transition-colors"
-    >
-      <div className={`border-2 border-gray-400 ${shapeStyles[shape]}`} />
-      <span className="text-sm font-medium">{label}</span>
-      <span className="text-xs text-gray-400">{seats} seats</span>
-    </button>
+    <div className="space-y-4">
+      {/* Mode tabs */}
+      <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+        {[
+          { id: 'quick', label: 'Quick Add', icon: Plus },
+          { id: 'text', label: 'Paste List', icon: FileSpreadsheet },
+          { id: 'excel', label: 'Excel File', icon: Upload },
+        ].map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => { setMode(id); setPreview([]); }}
+            className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-colors ${
+              mode === id ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Icon size={13} /> {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Quick add */}
+      {mode === 'quick' && (
+        <div className="space-y-3">
+          <p className="text-sm text-gray-600">Add multiple identical tables at once:</p>
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Count</label>
+              <input type="number" min="1" max="100" value={quickCount}
+                onChange={(e) => setQuickCount(parseInt(e.target.value) || 1)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Shape</label>
+              <select value={quickShape} onChange={(e) => setQuickShape(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
+                <option value="round">Round</option>
+                <option value="rectangle">Rectangle</option>
+                <option value="square">Square</option>
+                <option value="oval">Oval</option>
+                <option value="u-shape">U-Shape</option>
+                <option value="head-table">Head Table</option>
+                <option value="cocktail">Cocktail</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Seats each</label>
+              <input type="number" min="1" max="50" value={quickCapacity}
+                onChange={(e) => setQuickCapacity(parseInt(e.target.value) || 1)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            </div>
+          </div>
+          <Button className="w-full" onClick={handleQuickAdd}>
+            Add {quickCount} Tables
+          </Button>
+        </div>
+      )}
+
+      {/* Text paste */}
+      {mode === 'text' && (
+        <div className="space-y-3">
+          <p className="text-sm text-gray-600">Paste your table list — one per line:</p>
+          <p className="text-xs text-gray-400">Format: <code className="bg-gray-100 px-1 rounded">Name, Shape, Seats</code></p>
+          <textarea
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            placeholder={`Head Table, head-table, 12\nTable 1, round, 10\nTable 2, round, 10\nBar Area, cocktail, 4`}
+            rows={6}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono"
+          />
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1" onClick={handleTextParse}>Preview</Button>
+            {preview.length > 0 && (
+              <Button className="flex-1" onClick={() => onImport(preview)}>
+                Import {preview.length} Tables
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Excel upload */}
+      {mode === 'excel' && (
+        <div className="space-y-3">
+          <p className="text-sm text-gray-600">Upload an Excel or CSV with columns: <strong>Name, Shape, Seats</strong></p>
+          <p className="text-xs text-gray-400">
+            Venues often provide table layouts as spreadsheets. Upload it and we'll import the tables.
+            Valid shapes: round, rectangle, square, oval, u-shape, head-table, cocktail
+          </p>
+          <label className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 p-6 cursor-pointer hover:bg-gray-50 transition-colors">
+            <Upload size={24} className="text-gray-400" />
+            <span className="text-sm text-gray-500">{fileData || 'Drop file or click to upload'}</span>
+            <span className="text-xs text-gray-400">.xlsx, .xls, .csv</span>
+            <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleFileUpload} />
+          </label>
+          {preview.length > 0 && (
+            <Button className="w-full" onClick={() => onImport(preview)}>
+              Import {preview.length} Tables
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Preview */}
+      {preview.length > 0 && (
+        <div className="max-h-40 overflow-y-auto rounded-lg border border-gray-200">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="text-left px-3 py-1.5 font-medium text-gray-600">Name</th>
+                <th className="text-left px-3 py-1.5 font-medium text-gray-600">Shape</th>
+                <th className="text-center px-3 py-1.5 font-medium text-gray-600">Seats</th>
+              </tr>
+            </thead>
+            <tbody>
+              {preview.map((t, i) => (
+                <tr key={i} className="border-b border-gray-50">
+                  <td className="px-3 py-1.5 text-gray-800">{t.name}</td>
+                  <td className="px-3 py-1.5 text-gray-500 capitalize">{t.shape}</td>
+                  <td className="px-3 py-1.5 text-center text-gray-500">{t.capacity}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -337,5 +736,274 @@ function Grid3XIcon() {
       <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
       <rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
     </svg>
+  );
+}
+
+// ─── Zone presets ───────────────────────────────────────────────────────────
+
+const ZONE_PRESETS = [
+  { type: 'dancefloor', label: 'Dance Floor', icon: '💃', width: 250, height: 250, color: '#fef3c7' },
+  { type: 'dj',         label: 'DJ Booth',    icon: '🎧', width: 100, height: 60,  color: '#e0e7ff' },
+  { type: 'bar',        label: 'Bar',         icon: '🍸', width: 160, height: 60,  color: '#dbeafe' },
+  { type: 'gifts',      label: 'Gifts & Cards', icon: '🎁', width: 100, height: 80, color: '#fce7f3' },
+  { type: 'desserts',   label: 'Desserts',    icon: '🍰', width: 120, height: 60,  color: '#fef9c3' },
+  { type: 'cake',       label: 'Cake',        icon: '🎂', width: 80,  height: 80,  color: '#fff7ed' },
+  { type: 'stage',      label: 'Stage / Mandap', icon: '🔥', width: 300, height: 150, color: '#fee2e2' },
+  { type: 'photo',      label: 'Photo Booth', icon: '📸', width: 100, height: 80,  color: '#f3e8ff' },
+  { type: 'entrance',   label: 'Entrance',    icon: '🚪', width: 80,  height: 40,  color: '#f1f5f9' },
+  { type: 'custom',     label: 'Custom Zone',  icon: '📐', width: 150, height: 100, color: '#f3f4f6' },
+];
+
+// ─── Zone element (non-seatable, draggable) ─────────────────────────────────
+
+function ZoneElement({ zone, onUpdate, onRemove, zoom }) {
+  const dragStart = useRef(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editLabel, setEditLabel] = useState(zone.label);
+
+  const handleGripDown = useCallback((e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    dragStart.current = { x: e.clientX, y: e.clientY };
+    const handleMove = (me) => {
+      if (!dragStart.current) return;
+      const dx = me.clientX - dragStart.current.x;
+      const dy = me.clientY - dragStart.current.y;
+      dragStart.current = { x: me.clientX, y: me.clientY };
+      onUpdate({ x: (zone.x || 0) + dx / zoom, y: (zone.y || 0) + dy / zoom });
+    };
+    const handleUp = () => {
+      dragStart.current = null;
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+    };
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+  }, [zone.x, zone.y, zoom, onUpdate]);
+
+  const zoneIcon = ZONE_PRESETS.find((z) => z.type === zone.type)?.icon || '📐';
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: zone.x || 400,
+        top: zone.y || 200,
+        width: zone.width,
+        height: zone.height,
+      }}
+      className="group"
+    >
+      <div
+        style={{ backgroundColor: zone.color || '#f3f4f6' }}
+        className="w-full h-full rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-default transition-colors hover:border-gray-400"
+        onMouseDown={handleGripDown}
+      >
+        <span className="text-2xl mb-1 pointer-events-none">{zoneIcon}</span>
+        {isEditing ? (
+          <input
+            value={editLabel}
+            onChange={(e) => setEditLabel(e.target.value)}
+            onBlur={() => { onUpdate({ label: editLabel }); setIsEditing(false); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { onUpdate({ label: editLabel }); setIsEditing(false); } }}
+            className="text-xs font-semibold text-gray-700 bg-white rounded px-1 py-0.5 border text-center w-24"
+            autoFocus
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          />
+        ) : (
+          <span className="text-xs font-semibold text-gray-600 pointer-events-none">{zone.label}</span>
+        )}
+      </div>
+
+      {/* Hover actions */}
+      <div className="absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:flex gap-1 bg-white rounded-lg shadow-md border px-1 py-0.5 z-10">
+        <button onClick={() => setIsEditing(true)} className="p-1 rounded hover:bg-gray-100 text-gray-500 text-[10px]" title="Rename">✏️</button>
+        <button onClick={onRemove} className="p-1 rounded hover:bg-red-50 text-red-500 text-[10px]" title="Remove">🗑️</button>
+      </div>
+
+      {/* Resize handle */}
+      <div
+        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          const startX = e.clientX;
+          const startY = e.clientY;
+          const startW = zone.width;
+          const startH = zone.height;
+          const handleMove = (me) => {
+            onUpdate({
+              width: Math.max(60, startW + (me.clientX - startX) / zoom),
+              height: Math.max(40, startH + (me.clientY - startY) / zoom),
+            });
+          };
+          const handleUp = () => {
+            window.removeEventListener('mousemove', handleMove);
+            window.removeEventListener('mouseup', handleUp);
+          };
+          window.addEventListener('mousemove', handleMove);
+          window.addEventListener('mouseup', handleUp);
+        }}
+      >
+        <svg viewBox="0 0 10 10" className="w-3 h-3 text-gray-400">
+          <path d="M9 1L1 9M9 5L5 9M9 9L9 9" stroke="currentColor" strokeWidth="1.5" fill="none" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// ─── Venue layout presets ───────────────────────────────────────────────────
+
+const VENUE_LAYOUTS = [
+  {
+    name: 'Large Reception (30 rounds)',
+    description: '30 round tables (10 seats) + head table + dance floor + DJ + bar',
+    icon: '🏛️',
+    tables: [
+      { name: 'Head Table', shape: 'head-table', capacity: 12, width: 300, height: 60, x: 350, y: 40 },
+      ...Array.from({ length: 30 }, (_, i) => ({
+        name: `Table ${i + 1}`,
+        shape: 'round',
+        capacity: 10,
+        width: 120,
+        height: 120,
+        x: 80 + (i % 6) * 170,
+        y: 200 + Math.floor(i / 6) * 180,
+      })),
+    ],
+    zones: [
+      { type: 'dancefloor', label: 'Dance Floor', width: 280, height: 280, x: 360, y: 1200, color: '#fef3c7' },
+      { type: 'dj', label: 'DJ', width: 100, height: 60, x: 450, y: 1500, color: '#e0e7ff' },
+      { type: 'bar', label: 'Bar', width: 160, height: 60, x: 80, y: 1500, color: '#dbeafe' },
+    ],
+  },
+  {
+    name: 'Medium Reception (20 rounds)',
+    description: '20 round tables (8 seats) + head table + dance floor',
+    icon: '🎊',
+    tables: [
+      { name: 'Head Table', shape: 'head-table', capacity: 10, width: 280, height: 60, x: 300, y: 40 },
+      ...Array.from({ length: 20 }, (_, i) => ({
+        name: `Table ${i + 1}`,
+        shape: 'round',
+        capacity: 8,
+        width: 110,
+        height: 110,
+        x: 80 + (i % 5) * 180,
+        y: 180 + Math.floor(i / 5) * 180,
+      })),
+    ],
+    zones: [
+      { type: 'dancefloor', label: 'Dance Floor', width: 240, height: 240, x: 330, y: 950, color: '#fef3c7' },
+    ],
+  },
+  {
+    name: 'Banquet Hall (mixed)',
+    description: '4 long banquets + 12 rounds + head table + dance floor + bar',
+    icon: '🍽️',
+    tables: [
+      { name: 'Head Table', shape: 'head-table', capacity: 14, width: 320, height: 60, x: 340, y: 40 },
+      // Left banquets
+      { name: 'Banquet 1', shape: 'rectangle', capacity: 16, width: 280, height: 70, x: 40, y: 200 },
+      { name: 'Banquet 2', shape: 'rectangle', capacity: 16, width: 280, height: 70, x: 40, y: 380 },
+      { name: 'Banquet 3', shape: 'rectangle', capacity: 16, width: 280, height: 70, x: 40, y: 560 },
+      { name: 'Banquet 4', shape: 'rectangle', capacity: 16, width: 280, height: 70, x: 40, y: 740 },
+      // Right rounds
+      ...Array.from({ length: 12 }, (_, i) => ({
+        name: `Table ${i + 1}`,
+        shape: 'round',
+        capacity: 10,
+        width: 120,
+        height: 120,
+        x: 420 + (i % 3) * 180,
+        y: 180 + Math.floor(i / 3) * 180,
+      })),
+    ],
+    zones: [
+      { type: 'dancefloor', label: 'Dance Floor', width: 260, height: 260, x: 370, y: 950, color: '#fef3c7' },
+      { type: 'bar', label: 'Bar', width: 160, height: 60, x: 40, y: 960, color: '#dbeafe' },
+      { type: 'dj', label: 'DJ', width: 100, height: 60, x: 460, y: 1230, color: '#e0e7ff' },
+    ],
+  },
+  {
+    name: 'Indian Wedding (40 rounds)',
+    description: '40 round tables (10 seats) + stage/mandap + dance floor + dessert + gifts',
+    icon: '🪷',
+    tables: [
+      { name: 'Head Table', shape: 'head-table', capacity: 14, width: 340, height: 60, x: 330, y: 200 },
+      ...Array.from({ length: 40 }, (_, i) => ({
+        name: `Table ${i + 1}`,
+        shape: 'round',
+        capacity: 10,
+        width: 110,
+        height: 110,
+        x: 60 + (i % 8) * 140,
+        y: 380 + Math.floor(i / 8) * 160,
+      })),
+    ],
+    zones: [
+      { type: 'stage', label: 'Stage / Mandap', width: 340, height: 130, x: 330, y: 40, color: '#fee2e2' },
+      { type: 'dancefloor', label: 'Dance Floor', width: 300, height: 300, x: 350, y: 1250, color: '#fef3c7' },
+      { type: 'dj', label: 'DJ', width: 100, height: 60, x: 470, y: 1570, color: '#e0e7ff' },
+      { type: 'bar', label: 'Bar', width: 160, height: 60, x: 60, y: 1400, color: '#dbeafe' },
+      { type: 'desserts', label: 'Desserts', width: 140, height: 70, x: 800, y: 1400, color: '#fef9c3' },
+      { type: 'gifts', label: 'Gifts', width: 100, height: 80, x: 960, y: 1400, color: '#fce7f3' },
+      { type: 'photo', label: 'Photo Booth', width: 100, height: 80, x: 960, y: 40, color: '#f3e8ff' },
+    ],
+  },
+  {
+    name: 'Intimate Dinner (10 rounds)',
+    description: '10 round tables (8 seats) + sweetheart table',
+    icon: '💕',
+    tables: [
+      { name: 'Sweetheart', shape: 'round', capacity: 2, width: 70, height: 70, x: 400, y: 40 },
+      ...Array.from({ length: 10 }, (_, i) => ({
+        name: `Table ${i + 1}`,
+        shape: 'round',
+        capacity: 8,
+        width: 110,
+        height: 110,
+        x: 80 + (i % 4) * 200,
+        y: 180 + Math.floor(i / 4) * 200,
+      })),
+    ],
+    zones: [],
+  },
+];
+
+function VenuePresetsPanel({ onApply, onClose }) {
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-gray-600">
+        Pick a layout that matches your venue. You can move, resize, add, or remove tables after.
+      </p>
+      <p className="text-xs text-amber-600 font-medium">⚠️ This will replace your current layout.</p>
+
+      <div className="grid grid-cols-1 gap-3 max-h-96 overflow-y-auto">
+        {VENUE_LAYOUTS.map((layout, i) => (
+          <button
+            key={i}
+            onClick={() => {
+              if (confirm(`Apply "${layout.name}"? This replaces your current tables and zones.`)) {
+                onApply(layout);
+              }
+            }}
+            className="flex items-start gap-3 rounded-xl border border-gray-200 p-4 hover:bg-rose-50 hover:border-rose-200 transition-colors text-left"
+          >
+            <span className="text-3xl flex-shrink-0">{layout.icon}</span>
+            <div>
+              <div className="text-sm font-semibold text-gray-900">{layout.name}</div>
+              <div className="text-xs text-gray-500 mt-0.5">{layout.description}</div>
+              <div className="text-xs text-gray-400 mt-1">
+                {layout.tables.length} tables · {layout.tables.reduce((s, t) => s + t.capacity, 0)} seats
+                {layout.zones.length > 0 && ` · ${layout.zones.length} zones`}
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

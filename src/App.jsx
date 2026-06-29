@@ -18,6 +18,7 @@ import RSVPManager from './pages/RSVPManager';
 import PhotoGroupManager from './pages/PhotoGroupManager';
 import BetsManager from './pages/BetsManager';
 import WeddingWebsite from './pages/WeddingWebsite';
+import PrintExport from './pages/PrintExport';
 
 export default function App() {
   return (
@@ -49,6 +50,7 @@ export default function App() {
             <Route path="/photos" element={<PhotoGroupManager />} />
             <Route path="/bets" element={<BetsManager />} />
             <Route path="/website" element={<WeddingWebsite />} />
+            <Route path="/print" element={<PrintExport />} />
           </Route>
 
           {/* Catch-all */}

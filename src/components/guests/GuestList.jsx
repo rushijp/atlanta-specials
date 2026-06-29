@@ -141,7 +141,6 @@ export default function GuestList() {
               <th className="px-4 py-3 text-left font-medium text-gray-600">Family</th>
               <th className="px-4 py-3 text-left font-medium text-gray-600">Side</th>
               <th className="px-4 py-3 text-left font-medium text-gray-600">Dietary</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Table</th>
               <th className="px-4 py-3 text-left font-medium text-gray-600">Tags</th>
               <th className="px-4 py-3 text-left font-medium text-gray-600">Actions</th>
             </tr>
@@ -149,7 +148,7 @@ export default function GuestList() {
           <tbody className="divide-y divide-gray-100">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-12 text-center text-gray-400">
+                <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
                   {guests.length === 0 ? 'No guests yet. Add your first guest or import from Excel.' : 'No guests match your filters.'}
                 </td>
               </tr>
@@ -161,14 +160,12 @@ export default function GuestList() {
                   </td>
                   <td className="px-4 py-3 font-medium text-gray-900">
                     {guest.firstName} {guest.lastName}
-                    {guest.plusOne && <Badge variant="info" className="ml-2">+1</Badge>}
                   </td>
                   <td className="px-4 py-3 text-gray-600">{guest.familyName || '—'}</td>
                   <td className="px-4 py-3">
                     <Badge variant={guest.side === 'bride' ? 'rose' : 'info'}>{guest.side}</Badge>
                   </td>
                   <td className="px-4 py-3 text-gray-600 capitalize">{guest.dietary || '—'}</td>
-                  <td className="px-4 py-3 text-gray-600">{guest.tableNumber || '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
                       {(guest.tags || []).map((tag) => <Badge key={tag}>{tag}</Badge>)}
