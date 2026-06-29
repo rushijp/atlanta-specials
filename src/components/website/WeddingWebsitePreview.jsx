@@ -6,6 +6,7 @@ import {
   getThemeConfig,
   normalizeWebsiteConfig,
 } from './websiteThemes';
+import { FourCorners, MandalaBackground, HennaDivider } from './InvitationOrnaments';
 
 function formatDisplayDate(dateValue) {
   if (!dateValue) return '';
@@ -76,6 +77,11 @@ function SectionTitle({ eyebrow, title, description, theme }) {
       <h2 className="text-3xl font-semibold md:text-4xl" style={{ color: theme.text }}>
         {title}
       </h2>
+      {theme.ornaments && (
+        <div className="mt-4">
+          <HennaDivider color={theme.accent} width="60%" className="mx-auto" />
+        </div>
+      )}
       {description && (
         <p className="mt-4 text-sm leading-7 md:text-base" style={{ color: theme.muted }}>
           {description}
@@ -131,6 +137,15 @@ export default function WeddingWebsitePreview({
         }}
       >
         <div className="absolute inset-0 bg-black/5" />
+        {/* Ornamental decorations for Indian themes */}
+        {theme.ornaments && (
+          <>
+            <FourCorners color="rgba(255,255,255,0.15)" size={70} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+              <MandalaBackground color="#ffffff" size={400} opacity={0.04} />
+            </div>
+          </>
+        )}
         <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-12 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl text-white">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/90 backdrop-blur">

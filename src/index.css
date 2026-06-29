@@ -57,3 +57,8 @@ body {
 .section-cream {
   background-color: #fefdfb;
 }
+
+/* Mandala rotation for invitation ornaments */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
