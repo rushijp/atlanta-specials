@@ -10,6 +10,7 @@ export default function EventList() {
   const [events, setEvents] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [prefill, setPrefill] = useState(null);
 
   useEffect(() => {
     if (!activeWedding) return;
@@ -34,13 +35,10 @@ export default function EventList() {
             {EVENT_TEMPLATES.map((tmpl) => (
               <button
                 key={tmpl.name}
-                onClick={async () => {
-                  await addEvent(activeWedding.id, {
-                    name: tmpl.name,
-                    dressCode: tmpl.defaultDressCode,
-                    inviteAll: true,
-                    order: events.length,
-                  });
+                onClick={() => {
+                  setEditing(null);
+                  setPrefill({ name: tmpl.name, dressCode: tmpl.defaultDressCode });
+                  setShowAdd(true);
                 }}
                 className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700 transition-colors"
               >
@@ -100,14 +98,15 @@ export default function EventList() {
 
       {/* Add button */}
       {events.length > 0 && (
-        <Button onClick={() => setShowAdd(true)}><Plus size={16} /> Add Event</Button>
+        <Button onClick={() => { setPrefill(null); setShowAdd(true); }}><Plus size={16} /> Add Event</Button>
       )}
 
       {/* Form modal */}
       <EventFormModal
         open={showAdd || !!editing}
-        onClose={() => { setShowAdd(false); setEditing(null); }}
+        onClose={() => { setShowAdd(false); setEditing(null); setPrefill(null); }}
         event={editing}
+        prefill={prefill}
         weddingId={activeWedding.id}
         eventCount={events.length}
       />
@@ -115,13 +114,19 @@ export default function EventList() {
   );
 }
 
-function EventFormModal({ open, onClose, event, weddingId, eventCount }) {
+function EventFormModal({ open, onClose, event, prefill, weddingId, eventCount }) {
   const isEdit = !!event;
   const [form, setForm] = useState({});
 
   useEffect(() => {
     if (event) {
       setForm({ ...event });
+    } else if (prefill) {
+      setForm({
+        name: prefill.name || '', date: '', startTime: '', endTime: '',
+        venue: '', address: '', dressCode: prefill.dressCode || '', description: '',
+        inviteAll: true,
+      });
     } else {
       setForm({
         name: '', date: '', startTime: '', endTime: '',
@@ -129,7 +134,7 @@ function EventFormModal({ open, onClose, event, weddingId, eventCount }) {
         inviteAll: true,
       });
     }
-  }, [event, open]);
+  }, [event, prefill, open]);
 
   const update = (field, value) => setForm((f) => ({ ...f, [field]: value }));
 

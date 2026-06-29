@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useWedding } from '../contexts/WeddingContext';
@@ -7,12 +7,34 @@ import { Plus, Users, Calendar, Grid3X3, Mail } from 'lucide-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { COLLECTIONS, EVENT_TEMPLATES } from '../config/constants';
+import { subscribeToGuests } from '../services/guestService';
+import { subscribeToEvents } from '../services/eventService';
+import { subscribeToSeating } from '../services/seatingService';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { activeWedding, weddings, loading } = useWedding();
   const [showCreate, setShowCreate] = useState(false);
+  const [guests, setGuests] = useState([]);
+  const [events, setEvents] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!activeWedding) return;
+    const unsub1 = subscribeToGuests(activeWedding.id, setGuests);
+    const unsub2 = subscribeToEvents(activeWedding.id, setEvents);
+    return () => { unsub1(); unsub2(); };
+  }, [activeWedding]);
+
+  const guestCount = guests.length;
+  const eventCount = events.length;
+  const seatedCount = guests.filter((g) => g.tableNumber != null).length;
+  const rsvpRate = guestCount > 0
+    ? Math.round(guests.filter((g) => {
+        const statuses = Object.values(g.rsvpStatus || {});
+        return statuses.some((s) => s === 'accepted' || s === 'declined');
+      }).length / guestCount * 100)
+    : 0;
 
   if (loading) {
     return (
@@ -36,10 +58,10 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <QuickStat icon={Users} label="Guests" value="0" to="/guests" />
-        <QuickStat icon={Calendar} label="Events" value="0" to="/events" />
-        <QuickStat icon={Grid3X3} label="Tables" value="0" to="/seating" />
-        <QuickStat icon={Mail} label="RSVPs" value="0%" to="/rsvp" />
+        <QuickStat icon={Users} label="Guests" value={guestCount} to="/guests" />
+        <QuickStat icon={Calendar} label="Events" value={eventCount} to="/events" />
+        <QuickStat icon={Grid3X3} label="Seated" value={seatedCount} to="/seating" />
+        <QuickStat icon={Mail} label="RSVPs" value={`${rsvpRate}%`} to="/rsvp" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -59,11 +81,11 @@ export default function Dashboard() {
 
         <Card title="Getting Started">
           <div className="space-y-3">
-            <ChecklistItem done={false} label="Add your events (Mehndi, Sangeet, Ceremony, etc.)" />
-            <ChecklistItem done={false} label="Import or add your guest list" />
-            <ChecklistItem done={false} label="Assign guests to events" />
-            <ChecklistItem done={false} label="Set up seating chart" />
-            <ChecklistItem done={false} label="Open RSVP for guests" />
+            <ChecklistItem done={eventCount > 0} label="Add your events (Mehndi, Sangeet, Ceremony, etc.)" />
+            <ChecklistItem done={guestCount > 0} label="Import or add your guest list" />
+            <ChecklistItem done={guestCount > 0 && events.some((e) => !e.inviteAll && (e.guestIds || []).length > 0)} label="Assign guests to events" />
+            <ChecklistItem done={seatedCount > 0} label="Set up seating chart" />
+            <ChecklistItem done={activeWedding.settings?.rsvpOpen === true} label="Open RSVP for guests" />
           </div>
         </Card>
       </div>
