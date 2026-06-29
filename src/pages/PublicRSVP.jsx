@@ -6,9 +6,8 @@ import {
 } from '../services/rsvpService';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { COLLECTIONS, DIETARY_OPTIONS, APP_NAME, LANGUAGES } from '../config/constants';
-import { Search, Check, X, ChevronRight, Heart, Users, Globe, ZoomIn } from 'lucide-react';
-import { useTranslation } from '../utils/translations';
+import { COLLECTIONS, DIETARY_OPTIONS, APP_NAME } from '../config/constants';
+import { Search, Check, X, ChevronRight, Heart, Users } from 'lucide-react';
 
 export default function PublicRSVP() {
   const { weddingId } = useParams();
@@ -27,9 +26,6 @@ export default function PublicRSVP() {
   const [message, setMessage] = useState('');
   const [respondentName, setRespondentName] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [lang, setLang] = useState('en');
-  const [largeText, setLargeText] = useState(false);
-  const t = useTranslation(lang);
 
   useEffect(() => {
     async function load() {
@@ -179,30 +175,7 @@ export default function PublicRSVP() {
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-rose-50 via-white to-amber-50 ${largeText ? 'text-lg' : ''}`}>
-      {/* Accessibility bar — language + large text */}
-      <div className="flex items-center justify-end gap-2 px-4 py-2 bg-white/80 border-b border-gray-100">
-        <button
-          onClick={() => setLargeText(!largeText)}
-          className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors ${largeText ? 'bg-rose-100 text-rose-700' : 'text-gray-500 hover:bg-gray-100'}`}
-          title="Large text for easier reading"
-        >
-          <ZoomIn size={14} /> {largeText ? 'Normal' : 'Large Text'}
-        </button>
-        <div className="flex items-center gap-1">
-          <Globe size={14} className="text-gray-400" />
-          <select
-            value={lang}
-            onChange={(e) => setLang(e.target.value)}
-            className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white"
-          >
-            {LANGUAGES.filter(l => ['en', 'hi', 'gu', 'pa'].includes(l.code)).map((l) => (
-              <option key={l.code} value={l.code}>{l.nativeLabel}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-amber-50">
       {/* Header */}
       <header className="text-center pt-10 pb-6 px-4">
         <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3">
