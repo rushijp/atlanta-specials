@@ -251,7 +251,7 @@ export default function PublicRSVP() {
                 <p className="text-xs text-gray-400 uppercase tracking-wider font-medium mb-1">Select your household</p>
                 {groupByFamily(searchResults, allGuests).map(({ familyName, members }) => (
                   <button
-                    key={familyName + members[0].id}
+                    key={(familyName || '') + members[0].id}
                     onClick={() => handleSelectGuest(members[0])}
                     className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 hover:bg-rose-50 hover:border-rose-300 transition-all"
                   >
@@ -260,19 +260,10 @@ export default function PublicRSVP() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold text-gray-900 truncate">
-                        {familyName !== '(Individual)' ? `The ${familyName} Family` : `${members[0].firstName} ${members[0].lastName}`}
+                        {familyName ? `The ${familyName} Family` : `${members[0].firstName} ${members[0].lastName}`}
                       </div>
                       <div className="text-xs text-gray-500 truncate">
-                        {members.map((m) => {
-                          let label = m.firstName;
-                          if (m.relation) label += ` (${m.relation})`;
-                          return label;
-                        }).join(', ')}
-                      </div>
-                      {/* Disambiguator: show side + phone last 4 for common names */}
-                      <div className="text-[10px] text-gray-400 mt-0.5">
-                        {members[0].side === 'bride' ? "Bride's side" : "Groom's side"}
-                        {members[0].phone && ` · ...${members[0].phone.replace(/\D/g, '').slice(-4)}`}
+                        {members.map((m) => `${m.firstName} ${m.lastName}`).join(', ')}
                       </div>
                     </div>
                     <ChevronRight size={16} className="text-gray-400 flex-shrink-0" />
@@ -517,21 +508,16 @@ function groupByFamily(matches, allGuests) {
   const families = {};
   matches.forEach((g) => {
     if (!g.familyName) {
-      // Individual — unique key
-      families[`__solo_${g.id}`] = { familyName: '(Individual)', members: [g] };
+      families[`__solo_${g.id}`] = { familyName: null, members: [g] };
       return;
     }
 
-    // Group by familyName + side to distinguish bride's Patels from groom's Patels
-    const key = `${g.familyName}__${g.side || 'unknown'}`;
+    const key = g.familyName;
     if (!families[key]) {
-      const members = allGuests.filter(
-        (ag) => ag.familyName === g.familyName && ag.side === g.side
-      );
-      families[key] = {
-        familyName: g.familyName,
-        members: members.sort((a, b) => a.firstName.localeCompare(b.firstName)),
-      };
+      const members = allGuests
+        .filter((ag) => ag.familyName === g.familyName)
+        .sort((a, b) => a.firstName.localeCompare(b.firstName));
+      families[key] = { familyName: g.familyName, members };
     }
   });
   return Object.values(families);
