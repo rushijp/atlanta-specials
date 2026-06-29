@@ -1031,154 +1031,163 @@ function ZoneElement({ zone, onUpdate, onRemove, zoom }) {
 // chip positioning padding. Spacing must account for this.
 
 const VENUE_LAYOUTS = (() => {
-  // Helper: generate tables in a U-shape around a central point
-  // U opens toward the top (stage side). Tables placed on left, bottom, right.
-  function uShapeAroundCenter(cx, cy, cols, rows, spacing, tableConfig) {
-    const tables = [];
-    let idx = 0;
-    const halfW = (cols * spacing) / 2;
-    const halfH = (rows * spacing) / 2;
-
-    // Left column (top to bottom)
-    for (let r = 0; r < rows; r++) {
-      tables.push({ ...tableConfig, name: `Table ${++idx}`, x: cx - halfW - spacing / 2, y: cy - halfH + r * spacing });
-    }
-    // Bottom row (left to right, skip corners already placed)
-    for (let c = 0; c < cols; c++) {
-      tables.push({ ...tableConfig, name: `Table ${++idx}`, x: cx - halfW + c * spacing, y: cy + halfH });
-    }
-    // Right column (bottom to top)
-    for (let r = rows - 1; r >= 0; r--) {
-      tables.push({ ...tableConfig, name: `Table ${++idx}`, x: cx + halfW + spacing / 2, y: cy - halfH + r * spacing });
-    }
-    return tables;
-  }
-
   const S = 280; // standard spacing for round tables (120w + 80 pad + gap)
   const round10 = { shape: 'round', capacity: 10, width: 120, height: 120 };
   const round8 = { shape: 'round', capacity: 8, width: 110, height: 110 };
 
+  // Stagger helper: generates tables on left/right with alternating row offsets
+  // for better viewing angles and intimate feel
+  function staggeredSides(leftX, rightX, startY, rows, spacing, offset, config) {
+    const t = []; let n = 0;
+    for (let r = 0; r < rows; r++) {
+      const stagger = r % 2 === 1 ? offset : 0;
+      t.push({ ...config, name: `Table ${++n}`, x: leftX + stagger, y: startY + r * spacing });
+      t.push({ ...config, name: `Table ${++n}`, x: rightX - stagger, y: startY + r * spacing });
+    }
+    return t;
+  }
+
   return [
     {
       name: 'Large Reception (30 rounds)',
-      description: 'Head table at front, stage/DJ opposite end, tables on left & right of dance floor',
+      description: 'Head table at top, stage at bottom, staggered tables left & right of dance floor',
       icon: '🏛️',
       tables: [
-        // Head table at bottom-center (bride & groom face the room)
-        { name: 'Head Table', shape: 'head-table', capacity: 12, width: 340, height: 60, x: 1030, y: 1800 },
+        // Head table at top
+        { name: 'Head Table', shape: 'head-table', capacity: 12, width: 340, height: 60, x: 1030, y: 80 },
         ...(() => {
           const t = []; let n = 0;
-          // Left side of dance floor (2 columns × 7 rows)
-          for (let c = 0; c < 2; c++)
-            for (let r = 0; r < 7; r++)
-              t.push({ ...round10, name: `Table ${++n}`, x: 100 + c * S, y: 300 + r * S });
-          // Right side of dance floor (2 columns × 7 rows)
-          for (let c = 0; c < 2; c++)
-            for (let r = 0; r < 7; r++)
-              t.push({ ...round10, name: `Table ${++n}`, x: 1700 + c * S, y: 300 + r * S });
-          // 2 tables flanking head table
-          t.push({ ...round10, name: `Table ${++n}`, x: 600, y: 1800 });
-          t.push({ ...round10, name: `Table ${++n}`, x: 1550, y: 1800 });
-          return t.slice(0, 30);
+          // Left side — 2 staggered columns × 7 rows
+          for (let r = 0; r < 7; r++) {
+            const stagger = r % 2 === 1 ? 60 : 0;
+            t.push({ ...round10, name: `Table ${++n}`, x: 100 + stagger, y: 300 + r * S });
+            t.push({ ...round10, name: `Table ${++n}`, x: 100 + S + stagger, y: 300 + r * S });
+          }
+          // Right side — 2 staggered columns × 7 rows
+          for (let r = 0; r < 7; r++) {
+            const stagger = r % 2 === 1 ? -60 : 0;
+            t.push({ ...round10, name: `Table ${++n}`, x: 1700 + stagger, y: 300 + r * S });
+            t.push({ ...round10, name: `Table ${++n}`, x: 1700 + S + stagger, y: 300 + r * S });
+          }
+          return t.slice(0, 28);
         })(),
+        // 2 tables flanking head table
+        { ...round10, name: 'Table 29', x: 600, y: 80 },
+        { ...round10, name: 'Table 30', x: 1550, y: 80 },
       ],
       zones: [
-        { type: 'stage', label: 'Stage / DJ', width: 500, height: 100, x: 950, y: 60, color: '#e0e7ff' },
-        { type: 'dancefloor', label: 'Dance Floor', width: 500, height: 500, x: 950, y: 700, color: '#fef3c7' },
-        { type: 'bar', label: 'Bar', width: 200, height: 70, x: 100, y: 2050, color: '#dbeafe' },
-        { type: 'desserts', label: 'Desserts', width: 160, height: 70, x: 2150, y: 2050, color: '#fef9c3' },
+        { type: 'stage', label: 'Stage / DJ', width: 500, height: 100, x: 950, y: 2150, color: '#e0e7ff' },
+        { type: 'dancefloor', label: 'Dance Floor', width: 500, height: 500, x: 950, y: 800, color: '#fef3c7' },
+        { type: 'bar', label: 'Bar', width: 200, height: 70, x: 100, y: 2150, color: '#dbeafe' },
+        { type: 'desserts', label: 'Desserts', width: 160, height: 70, x: 2150, y: 2150, color: '#fef9c3' },
       ],
     },
     {
       name: 'Medium Reception (20 rounds)',
-      description: 'Head table at front, stage opposite, tables flanking dance floor',
+      description: 'Head table at top, stage at bottom, staggered rounds on each side',
       icon: '🎊',
       tables: [
-        { name: 'Head Table', shape: 'head-table', capacity: 10, width: 300, height: 60, x: 1000, y: 1600 },
+        { name: 'Head Table', shape: 'head-table', capacity: 10, width: 300, height: 60, x: 1000, y: 80 },
         ...(() => {
           const t = []; let n = 0;
-          // Left side (2 cols × 5 rows = 10)
-          for (let c = 0; c < 2; c++)
-            for (let r = 0; r < 5; r++)
-              t.push({ ...round8, name: `Table ${++n}`, x: 150 + c * S, y: 300 + r * S });
-          // Right side (2 cols × 5 rows = 10)
-          for (let c = 0; c < 2; c++)
-            for (let r = 0; r < 5; r++)
-              t.push({ ...round8, name: `Table ${++n}`, x: 1600 + c * S, y: 300 + r * S });
+          // Left side staggered (2 cols × 5 rows)
+          for (let r = 0; r < 5; r++) {
+            const stagger = r % 2 === 1 ? 50 : 0;
+            t.push({ ...round8, name: `Table ${++n}`, x: 150 + stagger, y: 300 + r * S });
+            t.push({ ...round8, name: `Table ${++n}`, x: 150 + S + stagger, y: 300 + r * S });
+          }
+          // Right side staggered (2 cols × 5 rows)
+          for (let r = 0; r < 5; r++) {
+            const stagger = r % 2 === 1 ? -50 : 0;
+            t.push({ ...round8, name: `Table ${++n}`, x: 1600 + stagger, y: 300 + r * S });
+            t.push({ ...round8, name: `Table ${++n}`, x: 1600 + S + stagger, y: 300 + r * S });
+          }
           return t.slice(0, 20);
         })(),
       ],
       zones: [
-        { type: 'stage', label: 'Stage / DJ', width: 400, height: 100, x: 950, y: 60, color: '#e0e7ff' },
+        { type: 'stage', label: 'Stage / DJ', width: 400, height: 100, x: 950, y: 1750, color: '#e0e7ff' },
         { type: 'dancefloor', label: 'Dance Floor', width: 420, height: 400, x: 940, y: 650, color: '#fef3c7' },
       ],
     },
     {
       name: 'Estate Hall (mixed)',
-      description: 'Long estate + round tables on left/right, dance floor center, stage opposite head table',
+      description: 'Head table at top, stage at bottom, staggered estate tables on sides',
       icon: '🍽️',
       tables: [
-        { name: 'Head Table', shape: 'head-table', capacity: 14, width: 360, height: 60, x: 1000, y: 1500 },
-        // Left side: 3 long estate tables
+        { name: 'Head Table', shape: 'head-table', capacity: 14, width: 360, height: 60, x: 1000, y: 80 },
+        // Left side: 3 staggered estate tables
         { name: 'Estate 1', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 100, y: 350 },
-        { name: 'Estate 2', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 100, y: 600 },
+        { name: 'Estate 2', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 160, y: 600 },
         { name: 'Estate 3', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 100, y: 850 },
-        // Right side: 3 long estate tables
+        // Right side: 3 staggered estate tables
         { name: 'Estate 4', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 1900, y: 350 },
-        { name: 'Estate 5', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 1900, y: 600 },
+        { name: 'Estate 5', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 1840, y: 600 },
         { name: 'Estate 6', shape: 'rectangle', capacity: 16, width: 300, height: 70, x: 1900, y: 850 },
-        // Bottom row: round tables flanking head table
+        // Round tables near head table area
         ...Array.from({ length: 6 }, (_, i) => ({
           ...round10, name: `Table ${i + 1}`,
           x: 200 + i * 350, y: 1200,
         })),
       ],
       zones: [
-        { type: 'stage', label: 'Stage / DJ', width: 400, height: 100, x: 980, y: 60, color: '#e0e7ff' },
+        { type: 'stage', label: 'Stage / DJ', width: 400, height: 100, x: 980, y: 1550, color: '#e0e7ff' },
         { type: 'dancefloor', label: 'Dance Floor', width: 500, height: 400, x: 930, y: 450, color: '#fef3c7' },
-        { type: 'bar', label: 'Bar', width: 200, height: 70, x: 100, y: 1500, color: '#dbeafe' },
+        { type: 'bar', label: 'Bar', width: 200, height: 70, x: 100, y: 1550, color: '#dbeafe' },
       ],
     },
     {
       name: 'Indian Wedding Reception (40 rounds)',
-      description: 'Head table at front (bride/groom), stage/DJ opposite end, tables left & right of dance floor',
+      description: 'Head table at top, stage/DJ at bottom, staggered tables left & right of dance floor',
       icon: '🪷',
       tables: [
-        // Head table at bottom (bride & groom face the room toward stage)
-        { name: 'Head Table', shape: 'head-table', capacity: 14, width: 400, height: 60, x: 1000, y: 2200 },
+        // Head table at top
+        { name: 'Head Table', shape: 'head-table', capacity: 14, width: 400, height: 60, x: 1000, y: 80 },
         ...(() => {
           const t = []; let n = 0;
-          // Left side of dance floor (3 columns × 7 rows = 21)
-          for (let c = 0; c < 3; c++)
-            for (let r = 0; r < 7; r++)
-              t.push({ ...round10, name: `Table ${++n}`, x: 80 + c * 250, y: 400 + r * 250 });
-          // Right side of dance floor (3 columns × 7 rows = 21, take first 19)
-          for (let c = 0; c < 3; c++)
-            for (let r = 0; r < 7; r++)
-              t.push({ ...round10, name: `Table ${++n}`, x: 1700 + c * 250, y: 400 + r * 250 });
+          // Left side — 3 staggered columns × 7 rows
+          for (let r = 0; r < 7; r++) {
+            const stagger = r % 2 === 1 ? 55 : 0;
+            t.push({ ...round10, name: `Table ${++n}`, x: 80 + stagger, y: 350 + r * 250 });
+            t.push({ ...round10, name: `Table ${++n}`, x: 80 + 250 + stagger, y: 350 + r * 250 });
+            t.push({ ...round10, name: `Table ${++n}`, x: 80 + 500 + stagger, y: 350 + r * 250 });
+          }
+          // Right side — 3 staggered columns × 7 rows
+          for (let r = 0; r < 7; r++) {
+            const stagger = r % 2 === 1 ? -55 : 0;
+            t.push({ ...round10, name: `Table ${++n}`, x: 1700 + stagger, y: 350 + r * 250 });
+            t.push({ ...round10, name: `Table ${++n}`, x: 1700 + 250 + stagger, y: 350 + r * 250 });
+            t.push({ ...round10, name: `Table ${++n}`, x: 1700 + 500 + stagger, y: 350 + r * 250 });
+          }
           return t.slice(0, 40);
         })(),
       ],
       zones: [
-        { type: 'stage', label: 'Stage / Mandap', width: 500, height: 120, x: 950, y: 50, color: '#fee2e2' },
-        { type: 'dj', label: 'DJ', width: 140, height: 70, x: 1130, y: 200, color: '#e0e7ff' },
-        { type: 'dancefloor', label: 'Dance Floor', width: 550, height: 600, x: 920, y: 700, color: '#fef3c7' },
-        { type: 'bar', label: 'Bar', width: 200, height: 70, x: 80, y: 2200, color: '#dbeafe' },
-        { type: 'desserts', label: 'Desserts', width: 180, height: 80, x: 2400, y: 2200, color: '#fef9c3' },
-        { type: 'gifts', label: 'Gifts & Cards', width: 150, height: 90, x: 2400, y: 50, color: '#fce7f3' },
-        { type: 'photo', label: 'Photo Booth', width: 150, height: 100, x: 80, y: 50, color: '#f3e8ff' },
+        { type: 'stage', label: 'Stage', width: 500, height: 120, x: 950, y: 2150, color: '#fee2e2' },
+        { type: 'dj', label: 'DJ', width: 140, height: 70, x: 1130, y: 2000, color: '#e0e7ff' },
+        { type: 'dancefloor', label: 'Dance Floor', width: 550, height: 550, x: 920, y: 750, color: '#fef3c7' },
+        { type: 'bar', label: 'Bar', width: 200, height: 70, x: 80, y: 2150, color: '#dbeafe' },
+        { type: 'desserts', label: 'Desserts', width: 180, height: 80, x: 2400, y: 2150, color: '#fef9c3' },
+        { type: 'gifts', label: 'Gifts & Cards', width: 150, height: 90, x: 2400, y: 80, color: '#fce7f3' },
+        { type: 'photo', label: 'Photo Booth', width: 150, height: 100, x: 80, y: 80, color: '#f3e8ff' },
       ],
     },
     {
       name: 'Intimate Dinner (10 rounds)',
-      description: 'Sweetheart table at front, tables on left & right of dance floor',
+      description: 'Sweetheart table at top, staggered tables left & right of dance floor',
       icon: '💕',
       tables: [
-        { name: 'Sweetheart', shape: 'round', capacity: 2, width: 70, height: 70, x: 900, y: 1200 },
-        // Left column (5)
-        ...Array.from({ length: 5 }, (_, i) => ({ ...round8, name: `Table ${i + 1}`, x: 300, y: 200 + i * 260 })),
-        // Right column (5)
-        ...Array.from({ length: 5 }, (_, i) => ({ ...round8, name: `Table ${i + 6}`, x: 1400, y: 200 + i * 260 })),
+        { name: 'Sweetheart', shape: 'round', capacity: 2, width: 70, height: 70, x: 900, y: 80 },
+        // Left staggered (5)
+        ...Array.from({ length: 5 }, (_, i) => ({
+          ...round8, name: `Table ${i + 1}`,
+          x: 300 + (i % 2 === 1 ? 50 : 0), y: 300 + i * 260,
+        })),
+        // Right staggered (5)
+        ...Array.from({ length: 5 }, (_, i) => ({
+          ...round8, name: `Table ${i + 6}`,
+          x: 1400 - (i % 2 === 1 ? 50 : 0), y: 300 + i * 260,
+        })),
       ],
       zones: [
         { type: 'dancefloor', label: 'Dance Floor', width: 350, height: 350, x: 730, y: 500, color: '#fef3c7' },
@@ -1186,34 +1195,37 @@ const VENUE_LAYOUTS = (() => {
     },
     {
       name: 'Estate Tables + Stage (25 rounds)',
-      description: 'Stage/DJ at bottom, head table at top, 3 estate tables in U around stage, rounds on sides',
+      description: 'Head table at top, stage/DJ at bottom, 3 estate tables in U around stage, staggered rounds on sides',
       icon: '👑',
       tables: [
-        // Head table at top (bride & groom face the room)
-        { name: 'Head Table', shape: 'head-table', capacity: 14, width: 400, height: 60, x: 1000, y: 100 },
+        // Head table at top
+        { name: 'Head Table', shape: 'head-table', capacity: 14, width: 400, height: 60, x: 1000, y: 80 },
         // 3 estate tables in U-shape around stage at bottom
         { name: 'Estate Left', shape: 'rectangle', capacity: 14, width: 80, height: 350, x: 750, y: 1500 },
         { name: 'Estate Center', shape: 'rectangle', capacity: 16, width: 400, height: 70, x: 1000, y: 1900 },
         { name: 'Estate Right', shape: 'rectangle', capacity: 14, width: 80, height: 350, x: 1570, y: 1500 },
-        // Left side rounds (2 cols × 5 rows = 10)
+        // Left side staggered rounds (2 cols × 5 rows = 10)
         ...(() => {
           const t = []; let n = 0;
-          for (let c = 0; c < 2; c++)
-            for (let r = 0; r < 5; r++)
-              t.push({ ...round10, name: `Table ${++n}`, x: 80 + c * 260, y: 300 + r * 260 });
+          for (let r = 0; r < 5; r++) {
+            const stagger = r % 2 === 1 ? 50 : 0;
+            t.push({ ...round10, name: `Table ${++n}`, x: 80 + stagger, y: 300 + r * 260 });
+            t.push({ ...round10, name: `Table ${++n}`, x: 80 + 260 + stagger, y: 300 + r * 260 });
+          }
           return t;
         })(),
-        // Right side rounds (2 cols × 5 rows = 10)
+        // Right side staggered rounds (2 cols × 5 rows = 10)
         ...(() => {
           const t = []; let n = 10;
-          for (let c = 0; c < 2; c++)
-            for (let r = 0; r < 5; r++)
-              t.push({ ...round10, name: `Table ${++n}`, x: 1750 + c * 260, y: 300 + r * 260 });
+          for (let r = 0; r < 5; r++) {
+            const stagger = r % 2 === 1 ? -50 : 0;
+            t.push({ ...round10, name: `Table ${++n}`, x: 1750 + stagger, y: 300 + r * 260 });
+            t.push({ ...round10, name: `Table ${++n}`, x: 1750 + 260 + stagger, y: 300 + r * 260 });
+          }
           return t;
         })(),
-        // 2 rounds flanking head table
-        { ...round8, name: 'Table 21', x: 550, y: 100 },
-        { ...round8, name: 'Table 22', x: 1550, y: 100 },
+        // 1 table flanking head table
+        { ...round8, name: 'Table 21', x: 550, y: 80 },
       ],
       zones: [
         { type: 'stage', label: 'Stage / DJ', width: 400, height: 120, x: 1000, y: 2050, color: '#e0e7ff' },
