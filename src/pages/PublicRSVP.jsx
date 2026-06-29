@@ -6,8 +6,9 @@ import {
 } from '../services/rsvpService';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { COLLECTIONS, DIETARY_OPTIONS, APP_NAME } from '../config/constants';
-import { Search, Check, X, ChevronRight, Heart, Users } from 'lucide-react';
+import { COLLECTIONS, DIETARY_OPTIONS, APP_NAME, LANGUAGES } from '../config/constants';
+import { Search, Check, X, ChevronRight, Heart, Users, Globe, ZoomIn } from 'lucide-react';
+import { useTranslation } from '../utils/translations';
 
 export default function PublicRSVP() {
   const { weddingId } = useParams();
@@ -26,6 +27,9 @@ export default function PublicRSVP() {
   const [message, setMessage] = useState('');
   const [respondentName, setRespondentName] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [lang, setLang] = useState('en');
+  const [largeText, setLargeText] = useState(false);
+  const t = useTranslation(lang);
 
   useEffect(() => {
     async function load() {
@@ -175,7 +179,30 @@ export default function PublicRSVP() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-amber-50">
+    <div className={`min-h-screen bg-gradient-to-br from-rose-50 via-white to-amber-50 ${largeText ? 'text-lg' : ''}`}>
+      {/* Accessibility bar — language + large text */}
+      <div className="flex items-center justify-end gap-2 px-4 py-2 bg-white/80 border-b border-gray-100">
+        <button
+          onClick={() => setLargeText(!largeText)}
+          className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition-colors ${largeText ? 'bg-rose-100 text-rose-700' : 'text-gray-500 hover:bg-gray-100'}`}
+          title="Large text for easier reading"
+        >
+          <ZoomIn size={14} /> {largeText ? 'Normal' : 'Large Text'}
+        </button>
+        <div className="flex items-center gap-1">
+          <Globe size={14} className="text-gray-400" />
+          <select
+            value={lang}
+            onChange={(e) => setLang(e.target.value)}
+            className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white"
+          >
+            {LANGUAGES.filter(l => ['en', 'hi', 'gu', 'pa'].includes(l.code)).map((l) => (
+              <option key={l.code} value={l.code}>{l.nativeLabel}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Header */}
       <header className="text-center pt-10 pb-6 px-4">
         <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3">
@@ -224,7 +251,7 @@ export default function PublicRSVP() {
                 <p className="text-xs text-gray-400 uppercase tracking-wider font-medium mb-1">Select your household</p>
                 {groupByFamily(searchResults, allGuests).map(({ familyName, members }) => (
                   <button
-                    key={familyName}
+                    key={familyName + members[0].id}
                     onClick={() => handleSelectGuest(members[0])}
                     className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-200 hover:bg-rose-50 hover:border-rose-300 transition-all"
                   >
@@ -236,7 +263,16 @@ export default function PublicRSVP() {
                         {familyName !== '(Individual)' ? `The ${familyName} Family` : `${members[0].firstName} ${members[0].lastName}`}
                       </div>
                       <div className="text-xs text-gray-500 truncate">
-                        {members.map((m) => m.firstName).join(', ')}
+                        {members.map((m) => {
+                          let label = m.firstName;
+                          if (m.relation) label += ` (${m.relation})`;
+                          return label;
+                        }).join(', ')}
+                      </div>
+                      {/* Disambiguator: show side + phone last 4 for common names */}
+                      <div className="text-[10px] text-gray-400 mt-0.5">
+                        {members[0].side === 'bride' ? "Bride's side" : "Groom's side"}
+                        {members[0].phone && ` · ...${members[0].phone.replace(/\D/g, '').slice(-4)}`}
                       </div>
                     </div>
                     <ChevronRight size={16} className="text-gray-400 flex-shrink-0" />
@@ -480,14 +516,20 @@ function RsvpCard({ children, className = '' }) {
 function groupByFamily(matches, allGuests) {
   const families = {};
   matches.forEach((g) => {
-    const key = g.familyName || `__solo_${g.id}`;
+    if (!g.familyName) {
+      // Individual — unique key
+      families[`__solo_${g.id}`] = { familyName: '(Individual)', members: [g] };
+      return;
+    }
+
+    // Group by familyName + side to distinguish bride's Patels from groom's Patels
+    const key = `${g.familyName}__${g.side || 'unknown'}`;
     if (!families[key]) {
-      // Pull ALL family members (not just matches) so we show the full household
-      const members = g.familyName
-        ? allGuests.filter((ag) => ag.familyName === g.familyName)
-        : [g];
+      const members = allGuests.filter(
+        (ag) => ag.familyName === g.familyName && ag.side === g.side
+      );
       families[key] = {
-        familyName: g.familyName || '(Individual)',
+        familyName: g.familyName,
         members: members.sort((a, b) => a.firstName.localeCompare(b.firstName)),
       };
     }

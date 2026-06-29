@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
-import { Trash2, Edit3, GripVertical, Check, Users, X } from 'lucide-react';
+import { Trash2, Edit3, GripVertical, Check, Users, X, AlertTriangle } from 'lucide-react';
 
 const SHAPE_OPTIONS = [
   { value: 'round', label: 'Round' },
@@ -32,7 +32,7 @@ const DIETARY_ICONS = {
   other: '🍽️',
 };
 
-export default function TableComponent({ table, guests, onUpdate, onRemove, onDrag, onRemoveGuest }) {
+export default function TableComponent({ table, guests, warnings = [], onUpdate, onRemove, onDrag, onRemoveGuest }) {
   const [isEditing, setIsEditing] = useState(false);
   const [showGuestPanel, setShowGuestPanel] = useState(false);
   const [editForm, setEditForm] = useState({});
@@ -45,6 +45,7 @@ export default function TableComponent({ table, guests, onUpdate, onRemove, onDr
     .filter(Boolean);
 
   const isOverCapacity = assignedGuests.length > table.capacity;
+  const hasWarnings = warnings.length > 0;
 
   // Group guests by family for the panel
   const guestsByFamily = assignedGuests.reduce((acc, g) => {
@@ -176,11 +177,17 @@ export default function TableComponent({ table, guests, onUpdate, onRemove, onDr
         className={`
           border-2 flex flex-col items-center justify-center transition-colors cursor-pointer
           ${shapeStyles[table.shape]}
-          ${isOver ? 'border-rose-500 bg-rose-50 shadow-lg ring-2 ring-rose-300' : isOverCapacity ? 'border-red-400 bg-red-50' : showGuestPanel ? 'border-rose-400 bg-rose-50/50 ring-1 ring-rose-200' : 'border-gray-300 bg-white hover:border-gray-400'}
+          ${isOver ? 'border-rose-500 bg-rose-50 shadow-lg ring-2 ring-rose-300' : isOverCapacity ? 'border-red-400 bg-red-50' : hasWarnings ? 'border-amber-400 bg-amber-50 ring-1 ring-amber-200' : showGuestPanel ? 'border-rose-400 bg-rose-50/50 ring-1 ring-rose-200' : 'border-gray-300 bg-white hover:border-gray-400'}
         `}
         onClick={handleTableClick}
         onDoubleClick={(e) => { e.stopPropagation(); startEdit(); }}
       >
+        {hasWarnings && (
+          <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-800">
+            <AlertTriangle size={10} />
+            {warnings.length}
+          </div>
+        )}
         {/* Edit panel */}
         {isEditing ? (
           <div className="absolute -left-2 -top-2 z-30 bg-white rounded-xl shadow-xl border border-gray-200 p-3 w-56" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
@@ -243,6 +250,11 @@ export default function TableComponent({ table, guests, onUpdate, onRemove, onDr
         <span className={`text-xs ${isOverCapacity ? 'text-red-600 font-bold' : 'text-gray-400'}`}>
           {assignedGuests.length}/{table.capacity}
         </span>
+        {hasWarnings && (
+          <span className="mt-1 px-2 text-center text-[10px] font-medium text-amber-700">
+            Seating rule warning
+          </span>
+        )}
       </div>
 
       {/* Guest list popover — shows on click */}

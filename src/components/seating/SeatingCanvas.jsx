@@ -1,14 +1,17 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { DndContext, DragOverlay, useSensor, useSensors, PointerSensor, pointerWithin } from '@dnd-kit/core';
+import { QRCodeSVG } from 'qrcode.react';
 import { useWedding } from '../../contexts/WeddingContext';
 import { subscribeToGuests } from '../../services/guestService';
 import { subscribeToEvents } from '../../services/eventService';
 import { subscribeToSeating, saveSeating } from '../../services/seatingService';
-import { Button, Badge, Modal, Input } from '../ui';
-import { Plus, ZoomIn, ZoomOut, Printer, Users, RotateCcw, Filter, Save, Upload, Image, FileSpreadsheet } from 'lucide-react';
+import { Button, Modal } from '../ui';
+import { Plus, ZoomIn, ZoomOut, RotateCcw, Save, Upload, Image, FileSpreadsheet, QrCode, AlertTriangle, Copy, Check, ShieldAlert } from 'lucide-react';
 import { TABLE_DEFAULTS, TABLE_PRESETS } from '../../config/constants';
 import TableComponent from './Table';
 import GuestSidebar from './GuestSidebar';
+import RulesPanel from './RulesPanel';
+import { evaluateSeatingRules } from './seatingRules';
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -26,6 +29,8 @@ export default function SeatingCanvas() {
   const [showImport, setShowImport] = useState(false);
   const [showCustom, setShowCustom] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
+  const [showRules, setShowRules] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
   const [customTable, setCustomTable] = useState({ name: '', shape: 'round', capacity: 10, width: 120, height: 120 });
   const [venueImage, setVenueImage] = useState(null);
   const [venueOpacity, setVenueOpacity] = useState(0.3);
@@ -33,6 +38,9 @@ export default function SeatingCanvas() {
   const [filterSide, setFilterSide] = useState('all');
   const [filterFamily, setFilterFamily] = useState('all');
   const [hasChanges, setHasChanges] = useState(false);
+  const [copiedFinderLink, setCopiedFinderLink] = useState(false);
+  const canvasScrollRef = useRef(null);
+  const qrPrintRef = useRef(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -54,8 +62,8 @@ export default function SeatingCanvas() {
       setTables(data.tables || []);
       setRules(data.rules || []);
       setZones(data.zones || []);
-      if (data.venueImage) setVenueImage(data.venueImage);
-      if (data.venueOpacity !== undefined) setVenueOpacity(data.venueOpacity);
+      setVenueImage(data.venueImage || null);
+      setVenueOpacity(data.venueOpacity !== undefined ? data.venueOpacity : 0.3);
     });
   }, [activeWedding, selectedEventId]);
 
@@ -79,12 +87,86 @@ export default function SeatingCanvas() {
     return [...new Set(guests.map((g) => g.familyName).filter(Boolean))].sort();
   }, [guests]);
 
+  const selectedEvent = useMemo(
+    () => events.find((event) => event.id === selectedEventId) || null,
+    [events, selectedEventId],
+  );
+
+  const finderLink = useMemo(() => {
+    if (typeof window === 'undefined' || !activeWedding?.id || !selectedEventId) return '';
+    return `${window.location.origin}/find-table/${activeWedding.id}/${selectedEventId}`;
+  }, [activeWedding, selectedEventId]);
+
+  const ruleEvaluation = useMemo(
+    () => evaluateSeatingRules(rules, tables, guests),
+    [rules, tables, guests],
+  );
+
   // Save to Firestore
   const handleSave = useCallback(async () => {
     if (!activeWedding || !selectedEventId) return;
     await saveSeating(activeWedding.id, selectedEventId, { tables, rules, zones, venueImage: venueImage || null, venueOpacity });
     setHasChanges(false);
   }, [activeWedding, selectedEventId, tables, rules, zones, venueImage, venueOpacity]);
+
+  const handleRulesChange = useCallback((nextRules) => {
+    setRules(nextRules);
+    setHasChanges(true);
+  }, []);
+
+  const handleCopyFinderLink = useCallback(async () => {
+    if (!finderLink) return;
+    await navigator.clipboard.writeText(finderLink);
+    setCopiedFinderLink(true);
+    setTimeout(() => setCopiedFinderLink(false), 2000);
+  }, [finderLink]);
+
+  const handlePrintQr = useCallback(() => {
+    if (!finderLink || !qrPrintRef.current) return;
+
+    const printWindow = window.open('', '_blank', 'noopener,noreferrer');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Table Finder QR</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 32px; text-align: center; color: #111827; }
+            .wrapper { max-width: 520px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 24px; padding: 32px; }
+            .subtitle { color: #e11d48; font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; }
+            .title { font-size: 28px; font-weight: 700; margin: 12px 0 8px; }
+            .text { color: #6b7280; margin-bottom: 24px; }
+            .url { font-size: 14px; word-break: break-all; margin-top: 20px; color: #374151; }
+          </style>
+        </head>
+        <body>
+          <div class="wrapper">
+            <div class="subtitle">${selectedEvent?.name || 'Table Finder'}</div>
+            <div class="title">Find Your Table</div>
+            <div class="text">Scan this QR code or visit the link below to see your table assignment.</div>
+            ${qrPrintRef.current.innerHTML}
+            <div class="url">${finderLink}</div>
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  }, [finderLink, selectedEvent]);
+
+  const handleFocusTable = useCallback((tableId) => {
+    const table = tables.find((item) => item.id === tableId);
+    if (!table || !canvasScrollRef.current) return;
+
+    canvasScrollRef.current.scrollTo({
+      left: Math.max(table.x * zoom - canvasScrollRef.current.clientWidth / 3, 0),
+      top: Math.max(table.y * zoom - canvasScrollRef.current.clientHeight / 3, 0),
+      behavior: 'smooth',
+    });
+    setShowRules(false);
+  }, [tables, zoom]);
 
   // Auto-save on changes (debounced)
   useEffect(() => {
@@ -309,6 +391,14 @@ export default function SeatingCanvas() {
               <Upload size={14} /> Import
             </Button>
 
+            <Button variant="outline" size="sm" onClick={() => setShowRules(true)}>
+              <ShieldAlert size={14} /> Rules
+            </Button>
+
+            <Button variant="outline" size="sm" onClick={() => setShowQrModal(true)} disabled={!selectedEventId}>
+              <QrCode size={14} /> QR Code
+            </Button>
+
             {/* Venue floor plan */}
             <label className="cursor-pointer">
               <input type="file" accept="image/*" className="hidden"
@@ -345,7 +435,21 @@ export default function SeatingCanvas() {
           </div>
 
           {/* Canvas */}
-          <div className="flex-1 rounded-xl border border-gray-200 bg-white overflow-auto relative">
+          {ruleEvaluation.violationCount > 0 && (
+            <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              <div className="flex items-center gap-2">
+                <AlertTriangle size={16} className="text-amber-500" />
+                <span>
+                  {ruleEvaluation.violationCount} seating rule violation{ruleEvaluation.violationCount === 1 ? '' : 's'} across {ruleEvaluation.tablesWithWarnings} table{ruleEvaluation.tablesWithWarnings === 1 ? '' : 's'}.
+                </span>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setShowRules(true)} className="border-amber-300 bg-white text-amber-900 hover:bg-amber-100">
+                Review Rules
+              </Button>
+            </div>
+          )}
+
+          <div ref={canvasScrollRef} className="flex-1 rounded-xl border border-gray-200 bg-white overflow-auto relative">
             {events.length === 0 ? (
               <div className="flex items-center justify-center h-full text-gray-400">
                 <p>Add events first to start seating</p>
@@ -398,6 +502,7 @@ export default function SeatingCanvas() {
                     key={table.id}
                     table={table}
                     guests={guests}
+                    warnings={ruleEvaluation.tableWarnings[table.id] || []}
                     onUpdate={(updates) => updateTable(table.id, updates)}
                     onRemove={() => removeTable(table.id)}
                     onDrag={(dx, dy) => handleTableDrag(table.id, dx, dy)}
@@ -422,6 +527,8 @@ export default function SeatingCanvas() {
             <span>{assignedGuestIds.size} / {guests.length} guests seated</span>
             <span>{guests.length - assignedGuestIds.size} unassigned</span>
             <span>{tables.reduce((s, t) => s + t.capacity, 0)} total capacity</span>
+            {rules.length > 0 && <span>{rules.length} rules</span>}
+            {ruleEvaluation.violationCount > 0 && <span className="text-amber-600">{ruleEvaluation.violationCount} warnings</span>}
             {hasChanges && <span className="text-amber-600">● Unsaved changes</span>}
           </div>
         </div>
@@ -534,6 +641,58 @@ export default function SeatingCanvas() {
       {/* Venue Layout Presets modal */}
       <Modal open={showPresets} onClose={() => setShowPresets(false)} title="Venue Layout Presets" size="lg">
         <VenuePresetsPanel onApply={applyPreset} onClose={() => setShowPresets(false)} />
+      </Modal>
+
+      <RulesPanel
+        open={showRules}
+        onClose={() => setShowRules(false)}
+        rules={rules}
+        guests={guests}
+        tables={tables}
+        violations={ruleEvaluation.violations}
+        onChange={handleRulesChange}
+        onFocusTable={handleFocusTable}
+      />
+
+      <Modal open={showQrModal} onClose={() => setShowQrModal(false)} title="Table Finder QR Code" size="lg">
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Share this QR code so guests can search their name and find their assigned table{selectedEvent ? ` for ${selectedEvent.name}` : ''}.
+          </p>
+
+          <div ref={qrPrintRef} className="rounded-3xl border border-rose-100 bg-gradient-to-br from-rose-50 to-white p-6 text-center">
+            <div className="text-xs font-semibold uppercase tracking-[0.3em] text-rose-500">
+              {selectedEvent?.name || 'Table Finder'}
+            </div>
+            <h3 className="mt-2 text-2xl font-bold text-gray-900">Find Your Table</h3>
+            <p className="mt-2 text-sm text-gray-500">Scan to see your seat and tablemates instantly.</p>
+
+            {finderLink && (
+              <div className="mt-5 flex justify-center">
+                <div className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+                  <QRCodeSVG value={finderLink} size={220} includeMargin />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Shareable Link</label>
+            <div className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 break-all">
+              {finderLink || 'Select an event to generate the guest link.'}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button variant="outline" className="flex-1" onClick={handleCopyFinderLink} disabled={!finderLink}>
+              {copiedFinderLink ? <Check size={14} /> : <Copy size={14} />}
+              {copiedFinderLink ? 'Copied' : 'Copy Link'}
+            </Button>
+            <Button className="flex-1" onClick={handlePrintQr} disabled={!finderLink}>
+              Print QR Sign
+            </Button>
+          </div>
+        </div>
       </Modal>
     </DndContext>
   );

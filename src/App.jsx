@@ -11,6 +11,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import PublicRSVP from './pages/PublicRSVP';
 import PublicWeddingWebsite from './pages/PublicWeddingWebsite';
+import TableFinder from './pages/TableFinder';
 import Dashboard from './pages/Dashboard';
 import GuestManager from './pages/GuestManager';
 import EventManager from './pages/EventManager';
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/rsvp/:weddingId" element={<PublicRSVP />} />
           <Route path="/w/:weddingId" element={<PublicWeddingWebsite />} />
+          <Route path="/find-table/:weddingId/:eventId" element={<TableFinder />} />
           <Route path="/photos/:weddingId" element={<PublicPhotoGroupQueue />} />
           <Route path="/photos/:weddingId/display" element={<PhotoGroupDisplayView />} />
           <Route path="/bets/:weddingId" element={<PublicBetsManager />} />

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Check,
   Copy,
@@ -114,10 +114,7 @@ export default function WebsiteBuilder() {
   const selectedEventIds = new Set(config.websiteEventIds || []);
   const coupleDisplayName = getCoupleDisplayName(activeWedding);
 
-  const selectedEventsCount = useMemo(
-    () => events.filter((event) => selectedEventIds.has(event.id)).length,
-    [events, selectedEventIds]
-  );
+  const selectedEventsCount = events.filter((event) => selectedEventIds.has(event.id)).length;
 
   if (!activeWedding) return null;
 
@@ -214,9 +211,9 @@ export default function WebsiteBuilder() {
             </Button>
             {canEdit && (
               <>
-                <Button size="sm" variant="outline" onClick={() => handleSave(false)} disabled={saving}>
+                <Button size="sm" variant="outline" onClick={() => handleSave()} disabled={saving}>
                   <Save size={14} />
-                  Save Draft
+                  {config.websitePublished ? 'Save Changes' : 'Save Draft'}
                 </Button>
                 <Button size="sm" onClick={() => handleSave(!config.websitePublished)} disabled={saving}>
                   <Send size={14} />
