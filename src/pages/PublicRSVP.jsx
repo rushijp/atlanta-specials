@@ -26,6 +26,9 @@ export default function PublicRSVP() {
   const [message, setMessage] = useState('');
   const [respondentName, setRespondentName] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [passwordUnlocked, setPasswordUnlocked] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     async function load() {
@@ -170,6 +173,51 @@ export default function PublicRSVP() {
         <Heart className="mx-auto text-wine-400 mb-4" size={48} />
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{wedding.coupleName}</h1>
         <p className="text-gray-600">RSVPs are currently closed.</p>
+      </CenteredPage>
+    );
+  }
+
+  // Password gate — if a password is set and not yet unlocked
+  if (settings.rsvpPassword && !passwordUnlocked) {
+    return (
+      <CenteredPage>
+        <div className="w-12 h-12 rounded-full bg-wine-100 text-wine-700 flex items-center justify-center mx-auto mb-4">
+          <Heart size={24} />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">{wedding.coupleName || 'Wedding RSVP'}</h1>
+        <p className="text-sm text-gray-500 mb-6">Enter the password from your invitation to continue.</p>
+        <div className="w-full max-w-xs mx-auto space-y-3">
+          <input
+            type="text"
+            value={passwordInput}
+            onChange={(e) => { setPasswordInput(e.target.value); setPasswordError(''); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                if (passwordInput.trim().toLowerCase() === settings.rsvpPassword.trim().toLowerCase()) {
+                  setPasswordUnlocked(true);
+                } else {
+                  setPasswordError('Incorrect password. Check your invitation and try again.');
+                }
+              }
+            }}
+            placeholder="Enter password"
+            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-center focus:border-wine-600 focus:ring-2 focus:ring-wine-100 transition-all"
+            autoFocus
+          />
+          {passwordError && <p className="text-xs text-red-600 text-center">{passwordError}</p>}
+          <button
+            onClick={() => {
+              if (passwordInput.trim().toLowerCase() === settings.rsvpPassword.trim().toLowerCase()) {
+                setPasswordUnlocked(true);
+              } else {
+                setPasswordError('Incorrect password. Check your invitation and try again.');
+              }
+            }}
+            className="w-full py-3 bg-wine-700 text-white rounded-xl text-sm font-medium hover:bg-wine-800 transition-colors"
+          >
+            Continue
+          </button>
+        </div>
       </CenteredPage>
     );
   }

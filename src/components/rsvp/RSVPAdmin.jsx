@@ -400,6 +400,7 @@ function RsvpSettingsForm({ settings, onSave }) {
     requirePhone: settings?.requirePhone ?? false,
     familyRsvp: settings?.familyRsvp ?? true,
     customMessage: settings?.customMessage || '',
+    rsvpPassword: settings?.rsvpPassword || '',
   });
 
   return (
@@ -488,6 +489,18 @@ function RsvpSettingsForm({ settings, onSave }) {
           rows={3}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">RSVP Password (optional)</label>
+        <input
+          type="text"
+          value={form.rsvpPassword}
+          onChange={(e) => setForm({ ...form, rsvpPassword: e.target.value })}
+          placeholder="Leave blank for no password"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+        />
+        <p className="text-xs text-gray-400 mt-1">Guests must enter this password before they can RSVP. Share it in your invite.</p>
       </div>
 
       <Button onClick={() => onSave(form)} className="w-full">Save Settings</Button>
