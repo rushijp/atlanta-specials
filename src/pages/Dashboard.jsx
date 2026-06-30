@@ -60,7 +60,7 @@ export default function Dashboard() {
         <p className="text-sm text-gray-500 mt-1">Your wedding at a glance</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
         <QuickStat icon={Users} label="Guests" value={guestCount} to="/guests" />
         <QuickStat icon={Calendar} label="Events" value={eventCount} to="/events" />
         <QuickStat icon={Grid3X3} label="Seated" value={seatedCount} to="/seating" />

@@ -8,11 +8,12 @@ import {
   subscribeToCollaborators,
   COLLAB_ROLES,
 } from '../../services/collaborationService';
-import { Button, Modal, Badge } from '../ui';
+import { Button, Modal, Badge, useToast } from '../ui';
 import { UserPlus, Trash2, Shield, Eye, Edit3, Crown, Mail } from 'lucide-react';
 
 export default function CollaboratorsPanel() {
   const { activeWedding, canEdit } = useWedding();
+  const toast = useToast();
   const { user } = useAuth();
   const [collaborators, setCollaborators] = useState([]);
   const [showInvite, setShowInvite] = useState(false);
@@ -53,7 +54,7 @@ export default function CollaboratorsPanel() {
       await removeCollaborator(activeWedding.id, collabId);
     } catch (err) {
       console.error('Failed to remove collaborator:', err);
-      alert('Failed to remove collaborator. Please try again.');
+      toast.error('Failed to remove collaborator. Please try again.');
     }
   };
 
@@ -62,7 +63,7 @@ export default function CollaboratorsPanel() {
       await updateCollaboratorRole(activeWedding.id, collabId, newRole);
     } catch (err) {
       console.error('Failed to update role:', err);
-      alert('Failed to update role. Please try again.');
+      toast.error('Failed to update role. Please try again.');
     }
   };
 

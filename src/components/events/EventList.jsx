@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useWedding } from '../../contexts/WeddingContext';
 import { subscribeToEvents, addEvent, updateEvent, deleteEvent } from '../../services/eventService';
-import { Button, Input, Modal, Badge } from '../ui';
+import { Button, Input, Modal, Badge, useToast } from '../ui';
 import { Plus, Edit3, Trash2, Calendar, Clock, MapPin, Users, Sparkles, GripVertical } from 'lucide-react';
 import { EVENT_TEMPLATES } from '../../config/constants';
 
@@ -24,6 +24,7 @@ function getEventColor(name) {
 
 export default function EventList() {
   const { activeWedding } = useWedding();
+  const toast = useToast();
   const [events, setEvents] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -40,7 +41,7 @@ export default function EventList() {
       await deleteEvent(activeWedding.id, eventId);
     } catch (err) {
       console.error('Failed to delete event:', err);
-      alert('Failed to delete event. Please try again.');
+      toast.error('Failed to delete event. Please try again.');
     }
   };
 
@@ -49,16 +50,16 @@ export default function EventList() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-display font-semibold text-gray-900">Your Events</h2>
+      <div className="flex items-start md:items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-lg md:text-xl font-display font-semibold text-gray-900">Your Events</h2>
           <p className="text-sm text-gray-500 mt-0.5">
             {events.length === 0 ? 'Plan every celebration, from mehndi to reception.' : `${events.length} event${events.length !== 1 ? 's' : ''} planned`}
           </p>
         </div>
         {events.length > 0 && (
-          <Button onClick={() => { setPrefill(null); setShowAdd(true); }} className="gap-1.5">
-            <Plus size={16} /> Add Event
+          <Button onClick={() => { setPrefill(null); setShowAdd(true); }} className="gap-1.5 flex-shrink-0" size="sm">
+            <Plus size={16} /> <span className="hidden md:inline">Add Event</span><span className="md:hidden">Add</span>
           </Button>
         )}
       </div>
@@ -263,7 +264,7 @@ function EventFormModal({ open, onClose, event, prefill, weddingId, eventCount }
         )}
 
         <Input label="Event Name" value={form.name || ''} onChange={(e) => update('name', e.target.value)} required placeholder="e.g. Sangeet Night" />
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input label="Date" type="date" value={form.date || ''} onChange={(e) => update('date', e.target.value)} />
           <div className="grid grid-cols-2 gap-2">
             <Input label="Start" type="time" value={form.startTime || ''} onChange={(e) => update('startTime', e.target.value)} />

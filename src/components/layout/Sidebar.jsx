@@ -30,7 +30,7 @@ const navItems = [
   { to: '/website', icon: Globe, label: 'Website' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate }) {
   const [collapsed, setCollapsed] = useState(false);
   const { logout } = useAuth();
   const { activeWedding } = useWedding();
@@ -67,6 +67,7 @@ export default function Sidebar() {
           <NavLink
             key={to}
             to={to}
+            onClick={onNavigate}
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all duration-150 ${
                 isActive

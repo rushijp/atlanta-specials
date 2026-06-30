@@ -2,13 +2,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { useWedding } from '../../contexts/WeddingContext';
 import { subscribeToGuests, addGuest, updateGuest, deleteGuest, deleteGuestsBatch, importGuestsBatch } from '../../services/guestService';
 import { subscribeToEvents } from '../../services/eventService';
-import { Button, Input, Badge, Modal } from '../ui';
+import { Button, Input, Badge, Modal, useToast } from '../ui';
 import { Search, Plus, Upload, Download, Trash2, Edit3, Filter, Users, ChevronDown } from 'lucide-react';
 import { parseFile, autoMapColumns, mapRowsToGuests, findDuplicates, exportGuestsToExcel, downloadGuestTemplate } from '../../utils/excelImport';
 import { DIETARY_OPTIONS, SIDES, GUEST_TAGS, RSVP_STATUS } from '../../config/constants';
 
 export default function GuestList() {
   const { activeWedding } = useWedding();
+  const toast = useToast();
   const [guests, setGuests] = useState([]);
   const [events, setEvents] = useState([]);
   const [search, setSearch] = useState('');
@@ -68,7 +69,7 @@ export default function GuestList() {
       setSelected(new Set());
     } catch (err) {
       console.error('Bulk delete failed:', err);
-      alert('Failed to delete some guests. Please try again.');
+      toast.error('Failed to delete some guests. Please try again.');
     }
   };
 
@@ -85,8 +86,8 @@ export default function GuestList() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="flex flex-wrap items-center gap-2 md:gap-3">
+        <div className="relative flex-1 min-w-[160px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
@@ -103,22 +104,25 @@ export default function GuestList() {
           <option value="groom">Groom's Side</option>
         </select>
 
-        <select value={filterDietary} onChange={(e) => setFilterDietary(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm">
-          <option value="all">All Dietary</option>
-          {DIETARY_OPTIONS.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
-        </select>
+        <div className="hidden md:contents">
+          <select value={filterDietary} onChange={(e) => setFilterDietary(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm">
+            <option value="all">All Dietary</option>
+            {DIETARY_OPTIONS.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
+          </select>
 
-        <select value={filterTag} onChange={(e) => setFilterTag(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm">
-          <option value="all">All Tags</option>
-          {GUEST_TAGS.map((t) => <option key={t} value={t}>{t}</option>)}
-        </select>
+          <select value={filterTag} onChange={(e) => setFilterTag(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm">
+            <option value="all">All Tags</option>
+            {GUEST_TAGS.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
 
-        <Button onClick={() => setShowAddModal(true)}><Plus size={16} /> Add Guest</Button>
-        <Button variant="outline" onClick={() => setShowImportModal(true)}><Upload size={16} /> Import</Button>
-        <Button variant="outline" onClick={downloadGuestTemplate}>
+        <Button onClick={() => setShowAddModal(true)} size="sm" className="md:hidden"><Plus size={16} /></Button>
+        <Button onClick={() => setShowAddModal(true)} className="hidden md:inline-flex"><Plus size={16} /> Add Guest</Button>
+        <Button variant="outline" onClick={() => setShowImportModal(true)} className="hidden md:inline-flex"><Upload size={16} /> Import</Button>
+        <Button variant="outline" onClick={downloadGuestTemplate} className="hidden md:inline-flex">
           <Download size={16} /> Template
         </Button>
-        <Button variant="outline" onClick={() => exportGuestsToExcel(guests)}>
+        <Button variant="outline" onClick={() => exportGuestsToExcel(guests)} className="hidden md:inline-flex">
           <Download size={16} /> Export
         </Button>
       </div>
@@ -134,8 +138,9 @@ export default function GuestList() {
         </div>
       )}
 
-      {/* Guest table */}
-      <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+      {/* Guest list — table on desktop, cards on mobile */}
+      {/* Desktop table */}
+      <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-200 bg-white">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
@@ -178,10 +183,10 @@ export default function GuestList() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
-                      <button onClick={() => setEditingGuest(guest)} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                      <button onClick={() => setEditingGuest(guest)} className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
                         <Edit3 size={16} />
                       </button>
-                      <button onClick={() => { if (confirm('Delete this guest?')) deleteGuest(activeWedding.id, guest.id); }} className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600">
+                      <button onClick={() => { if (confirm('Delete this guest?')) deleteGuest(activeWedding.id, guest.id); }} className="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600">
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -191,6 +196,36 @@ export default function GuestList() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile card list */}
+      <div className="md:hidden space-y-2">
+        {filtered.length === 0 ? (
+          <div className="rounded-xl border border-gray-200 bg-white px-4 py-12 text-center text-gray-400 text-sm">
+            {guests.length === 0 ? 'No guests yet. Tap + to add your first guest.' : 'No guests match your filters.'}
+          </div>
+        ) : (
+          filtered.map((guest) => (
+            <div key={guest.id} className="rounded-xl border border-gray-200 bg-white px-4 py-3 flex items-center gap-3">
+              <input type="checkbox" checked={selected.has(guest.id)} onChange={() => toggleSelect(guest.id)} className="rounded flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{guest.firstName} {guest.lastName}</p>
+                <p className="text-xs text-gray-500 truncate">
+                  {guest.familyName || 'No family'} · <span className="capitalize">{guest.side}</span>
+                  {guest.dietary && guest.dietary !== 'vegetarian' ? ` · ${guest.dietary}` : ''}
+                </p>
+              </div>
+              <div className="flex gap-1 flex-shrink-0">
+                <button onClick={() => setEditingGuest(guest)} className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                  <Edit3 size={16} />
+                </button>
+                <button onClick={() => { if (confirm('Delete?')) deleteGuest(activeWedding.id, guest.id); }} className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Modals */}
@@ -224,6 +259,7 @@ function StatCard({ label, value }) {
 
 function GuestFormModal({ open, onClose, guest, weddingId, events }) {
   const isEdit = !!guest;
+  const toast = useToast();
   const [form, setForm] = useState({});
 
   useEffect(() => {
@@ -252,7 +288,7 @@ function GuestFormModal({ open, onClose, guest, weddingId, events }) {
       onClose();
     } catch (err) {
       console.error('Failed to save guest:', err);
-      alert('Failed to save guest. Please try again.');
+      toast.error('Failed to save guest. Please try again.');
     }
   };
 
@@ -342,6 +378,7 @@ function GuestFormModal({ open, onClose, guest, weddingId, events }) {
 // ─── Import Modal ──────────────────────────────────────────────────────────
 
 function ImportModal({ open, onClose, weddingId, existingGuests }) {
+  const toast = useToast();
   const [step, setStep] = useState('upload'); // upload → map → preview → done
   const [file, setFile] = useState(null);
   const [parsed, setParsed] = useState(null);
@@ -379,7 +416,7 @@ function ImportModal({ open, onClose, weddingId, existingGuests }) {
       setColumnMapping(autoMap);
       setStep('map');
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 

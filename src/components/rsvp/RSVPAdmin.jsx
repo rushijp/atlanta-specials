@@ -134,12 +134,14 @@ export default function RSVPAdmin() {
   return (
     <div className="space-y-6">
       {/* Top bar — stats + actions */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 md:gap-3">
         <StatCard label="Total" count={stats.total} color="gray" icon={Users} />
         <StatCard label="Accepted" count={stats.accepted} color="green" icon={Check} />
         <StatCard label="Declined" count={stats.declined} color="red" icon={X} />
-        <StatCard label="Pending" count={stats.pending} color="amber" icon={Clock} />
-        <StatCard label="No Response" count={stats.noResponse} color="gray" icon={Mail} />
+        <div className="hidden md:contents">
+          <StatCard label="Pending" count={stats.pending} color="amber" icon={Clock} />
+          <StatCard label="No Response" count={stats.noResponse} color="gray" icon={Mail} />
+        </div>
 
         <div className="flex-1" />
 
@@ -152,11 +154,12 @@ export default function RSVPAdmin() {
         </Button>
 
         <Button variant="outline" size="sm" onClick={() => setShowShare(true)}>
-          <Share2 size={14} /> Share Link
+          <Share2 size={14} /> <span className="hidden md:inline">Share Link</span>
         </Button>
 
         <Button variant="outline" size="sm" onClick={() => setShowSettings(true)}>
-          Settings
+          <span className="hidden md:inline">Settings</span>
+          <span className="md:hidden">⚙</span>
         </Button>
       </div>
 
@@ -195,8 +198,9 @@ export default function RSVPAdmin() {
         </select>
       </div>
 
-      {/* Guest RSVP table */}
-      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+      {/* Guest RSVP — table on desktop, cards on mobile */}
+      {/* Desktop table */}
+      <div className="hidden md:block rounded-xl border border-gray-200 bg-white overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -268,6 +272,55 @@ export default function RSVPAdmin() {
         </div>
       </div>
 
+      {/* Mobile card list */}
+      <div className="md:hidden space-y-2">
+        {filteredGuests.length === 0 ? (
+          <div className="rounded-xl border border-gray-200 bg-white px-4 py-8 text-center text-sm text-gray-400">
+            {guests.length === 0 ? 'Add guests first to manage RSVPs' : 'No guests match your filters'}
+          </div>
+        ) : (
+          filteredGuests.map((guest) => (
+            <div key={guest.id} className="rounded-xl border border-gray-200 bg-white p-3">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{guest.firstName} {guest.lastName}</p>
+                  <p className="text-xs text-gray-500">{guest.familyName || 'No family'} · <span className="capitalize">{guest.side}</span></p>
+                </div>
+                <div className="flex gap-1">
+                  <button onClick={() => handleBulkRsvp(guest.id, 'accepted')} className="p-2 rounded-lg hover:bg-green-50 text-green-600" title="Accept all">
+                    <Check size={16} />
+                  </button>
+                  <button onClick={() => handleBulkRsvp(guest.id, 'declined')} className="p-2 rounded-lg hover:bg-red-50 text-red-600" title="Decline all">
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {(selectedEvent === 'all' ? events : events.filter((e) => e.id === selectedEvent)).map((evt) => {
+                  const status = (guest.rsvpStatus || {})[evt.id];
+                  return (
+                    <button
+                      key={evt.id}
+                      onClick={() => {
+                        const next = status === 'accepted' ? 'declined' : status === 'declined' ? null : 'accepted';
+                        handleSetRsvp(guest.id, evt.id, next);
+                      }}
+                      className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+                        status === 'accepted' ? 'bg-green-100 text-green-700' :
+                        status === 'declined' ? 'bg-red-100 text-red-700' :
+                        'bg-gray-100 text-gray-500'
+                      }`}
+                    >
+                      {evt.name}: {status === 'accepted' ? 'Yes' : status === 'declined' ? 'No' : '—'}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
       {/* Recent responses */}
       {responses.length > 0 && (
         <div className="rounded-xl border border-gray-200 bg-white p-4">
@@ -311,7 +364,7 @@ export default function RSVPAdmin() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <a
               href={whatsappLink}
               target="_blank"

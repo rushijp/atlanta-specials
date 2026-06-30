@@ -36,19 +36,21 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <Dialog.Panel className={`w-full ${sizeClasses[size]} rounded-2xl bg-white p-6 shadow-xl`}>
-              <div className="flex items-center justify-between mb-4">
+            <Dialog.Panel className={`w-full ${sizeClasses[size]} rounded-2xl bg-white p-4 md:p-6 shadow-xl max-h-[90vh] flex flex-col`}>
+              <div className="flex items-center justify-between mb-4 flex-shrink-0">
                 <Dialog.Title className="text-lg font-semibold text-gray-900">
                   {title}
                 </Dialog.Title>
                 <button
                   onClick={onClose}
-                  className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
                 >
                   <X size={20} />
                 </button>
               </div>
-              {children}
+              <div className="overflow-y-auto flex-1 -mx-1 px-1">
+                {children}
+              </div>
             </Dialog.Panel>
           </Transition.Child>
         </div>
