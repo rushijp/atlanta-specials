@@ -84,8 +84,14 @@ export function AuthProvider({ children }) {
       await ensureUserProfile(cred.user);
       return cred.user;
     } catch (err) {
-      // If popup was blocked or failed, fall back to redirect
-      if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
+      // Fall back to redirect for any popup-related failure
+      const redirectCodes = [
+        'auth/popup-blocked',
+        'auth/popup-closed-by-user',
+        'auth/operation-not-supported-in-this-environment',
+        'auth/web-storage-unsupported',
+      ];
+      if (redirectCodes.includes(err.code)) {
         await signInWithRedirect(auth, provider);
         return null;
       }

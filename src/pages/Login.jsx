@@ -28,18 +28,26 @@ export default function Login() {
 
   const handleGoogle = async () => {
     setError('');
+    setLoading(true);
     try {
       const user = await loginWithGoogle();
       if (user) navigate('/dashboard');
       // If null, redirect flow is in progress
     } catch (err) {
+      console.error('Google sign-in error:', err.code, err.message);
       if (err.code === 'auth/unauthorized-domain') {
-        setError('This domain is not authorized for Google sign-in. Please contact support.');
+        setError('This domain is not authorized for Google sign-in. Add it in Firebase Console → Auth → Settings → Authorized domains.');
       } else if (err.code === 'auth/cancelled-popup-request') {
         // User clicked button multiple times, ignore
+      } else if (err.code === 'auth/internal-error') {
+        setError('Google sign-in failed (internal error). Check that Google provider is enabled in Firebase Console.');
+      } else if (err.code === 'auth/network-request-failed') {
+        setError('Network error. Check your internet connection and try again.');
       } else {
-        setError('Google sign-in failed. Please try again or use email.');
+        setError(`Google sign-in failed: ${err.code || err.message}`);
       }
+    } finally {
+      setLoading(false);
     }
   };
 

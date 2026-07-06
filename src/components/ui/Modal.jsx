@@ -36,14 +36,14 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <Dialog.Panel className={`w-full ${sizeClasses[size]} rounded-2xl bg-white p-4 md:p-6 shadow-xl max-h-[90vh] flex flex-col`}>
+            <Dialog.Panel className={`w-full ${sizeClasses[size]} rounded-2xl bg-white p-4 md:p-6 shadow-xl max-h-[90dvh] flex flex-col`}>
               <div className="flex items-center justify-between mb-4 flex-shrink-0">
                 <Dialog.Title className="text-lg font-semibold text-gray-900">
                   {title}
                 </Dialog.Title>
                 <button
                   onClick={onClose}
-                  className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                  className="rounded-lg p-2.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
                   <X size={20} />
                 </button>

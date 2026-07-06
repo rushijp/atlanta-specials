@@ -320,10 +320,10 @@ export default function SeatingCanvas() {
 
   if (!activeWedding) return null;
 
-  return (
+   return (
     <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex h-[calc(100vh-8rem)] gap-4">
-        {/* Sidebar — unassigned guests */}
+      <div className="flex flex-col md:flex-row h-[calc(100vh-8rem)] gap-2 md:gap-4">
+        {/* Sidebar — unassigned guests (hidden on mobile, toggled via button) */}
         <GuestSidebar
           guests={unassignedGuests}
           allGuests={guests}
@@ -337,19 +337,24 @@ export default function SeatingCanvas() {
         />
 
         {/* Main canvas */}
-        <div className="flex-1 flex flex-col">
-          {/* Toolbar */}
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Toolbar — responsive: scrollable on mobile */}
+          <div className="flex items-center gap-2 mb-2 md:mb-3 overflow-x-auto pb-2 md:pb-0 md:flex-wrap scrollbar-thin">
             {/* Event selector */}
             <select
               value={selectedEventId || ''}
               onChange={(e) => setSelectedEventId(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="rounded-lg border border-gray-300 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm flex-shrink-0"
             >
               {events.map((evt) => <option key={evt.id} value={evt.id}>{evt.name}</option>)}
             </select>
 
-            <div className="flex-1" />
+            {/* Mobile: show unassigned count as toggle hint */}
+            <span className="md:hidden text-xs text-gray-500 flex-shrink-0 bg-gray-100 rounded-full px-2 py-1">
+              {unassignedGuests.length} unassigned
+            </span>
+
+            <div className="flex-1 hidden md:block" />
 
             <Button variant="outline" size="sm" onClick={() => setZoom((z) => Math.min(z + 0.1, 2))}>
               <ZoomIn size={14} />
@@ -934,23 +939,32 @@ function ZoneElement({ zone, onUpdate, onRemove, zoom }) {
   const [editLabel, setEditLabel] = useState(zone.label);
 
   const handleGripDown = useCallback((e) => {
+    const isTouch = e.type === 'touchstart';
+    if (isTouch) e.preventDefault();
     e.stopPropagation();
-    e.preventDefault();
-    dragStart.current = { x: e.clientX, y: e.clientY };
+    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+    dragStart.current = { x: clientX, y: clientY };
     const handleMove = (me) => {
       if (!dragStart.current) return;
-      const dx = me.clientX - dragStart.current.x;
-      const dy = me.clientY - dragStart.current.y;
-      dragStart.current = { x: me.clientX, y: me.clientY };
+      const cx = me.touches ? me.touches[0].clientX : me.clientX;
+      const cy = me.touches ? me.touches[0].clientY : me.clientY;
+      const dx = cx - dragStart.current.x;
+      const dy = cy - dragStart.current.y;
+      dragStart.current = { x: cx, y: cy };
       onUpdate({ x: (zone.x || 0) + dx / zoom, y: (zone.y || 0) + dy / zoom });
     };
     const handleUp = () => {
       dragStart.current = null;
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('mouseup', handleUp);
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('touchend', handleUp);
     };
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', handleUp);
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleUp);
   }, [zone.x, zone.y, zoom, onUpdate]);
 
   const zoneIcon = ZONE_PRESETS.find((z) => z.type === zone.type)?.icon || '📐';
@@ -970,6 +984,7 @@ function ZoneElement({ zone, onUpdate, onRemove, zoom }) {
         style={{ backgroundColor: zone.color || '#f3f4f6' }}
         className="w-full h-full rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-grab active:cursor-grabbing transition-colors hover:border-gray-400"
         onMouseDown={handleGripDown}
+        onTouchStart={handleGripDown}
       >
         <span className="text-2xl mb-1 pointer-events-none">{zoneIcon}</span>
         {isEditing ? (
@@ -996,7 +1011,7 @@ function ZoneElement({ zone, onUpdate, onRemove, zoom }) {
 
       {/* Resize handle */}
       <div
-        className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
         onMouseDown={(e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -1005,17 +1020,45 @@ function ZoneElement({ zone, onUpdate, onRemove, zoom }) {
           const startW = zone.width;
           const startH = zone.height;
           const handleMove = (me) => {
+            const cx = me.touches ? me.touches[0].clientX : me.clientX;
+            const cy = me.touches ? me.touches[0].clientY : me.clientY;
             onUpdate({
-              width: Math.max(60, startW + (me.clientX - startX) / zoom),
-              height: Math.max(40, startH + (me.clientY - startY) / zoom),
+              width: Math.max(60, startW + (cx - startX) / zoom),
+              height: Math.max(40, startH + (cy - startY) / zoom),
             });
           };
           const handleUp = () => {
             window.removeEventListener('mousemove', handleMove);
             window.removeEventListener('mouseup', handleUp);
+            window.removeEventListener('touchmove', handleMove);
+            window.removeEventListener('touchend', handleUp);
           };
           window.addEventListener('mousemove', handleMove);
           window.addEventListener('mouseup', handleUp);
+          window.addEventListener('touchmove', handleMove, { passive: false });
+          window.addEventListener('touchend', handleUp);
+        }}
+        onTouchStart={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          const startX = e.touches[0].clientX;
+          const startY = e.touches[0].clientY;
+          const startW = zone.width;
+          const startH = zone.height;
+          const handleMove = (me) => {
+            const cx = me.touches ? me.touches[0].clientX : me.clientX;
+            const cy = me.touches ? me.touches[0].clientY : me.clientY;
+            onUpdate({
+              width: Math.max(60, startW + (cx - startX) / zoom),
+              height: Math.max(40, startH + (cy - startY) / zoom),
+            });
+          };
+          const handleUp = () => {
+            window.removeEventListener('touchmove', handleMove);
+            window.removeEventListener('touchend', handleUp);
+          };
+          window.addEventListener('touchmove', handleMove, { passive: false });
+          window.addEventListener('touchend', handleUp);
         }}
       >
         <svg viewBox="0 0 10 10" className="w-3 h-3 text-gray-400">

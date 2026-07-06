@@ -299,20 +299,20 @@ function GuestFormModal({ open, onClose, guest, weddingId, events }) {
 
   return (
     <Modal open={open} onClose={onClose} title={isEdit ? 'Edit Guest' : 'Add Guest'} size="lg">
-      <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-        <div className="grid grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="space-y-4 pr-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <Input label="First Name" value={form.firstName || ''} onChange={(e) => update('firstName', e.target.value)} required />
           <Input label="Last Name" value={form.lastName || ''} onChange={(e) => update('lastName', e.target.value)} required />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <Input label="Email" type="email" value={form.email || ''} onChange={(e) => update('email', e.target.value)} />
           <Input label="Phone" value={form.phone || ''} onChange={(e) => update('phone', e.target.value)} />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <Input label="Family Name" value={form.familyName || ''} onChange={(e) => update('familyName', e.target.value)} placeholder="e.g. The Patel Family" />
           <Input label="Relation" value={form.relation || ''} onChange={(e) => update('relation', e.target.value)} placeholder="e.g. Cousin, Uncle" />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Side</label>
             <select value={form.side || 'bride'} onChange={(e) => update('side', e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
@@ -329,12 +329,12 @@ function GuestFormModal({ open, onClose, guest, weddingId, events }) {
         </div>
 
         <div className="flex items-center gap-6">
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.plusOne || false} onChange={(e) => update('plusOne', e.target.checked)} className="rounded" />
+          <label className="flex items-center gap-2 text-sm cursor-pointer py-1">
+            <input type="checkbox" checked={form.plusOne || false} onChange={(e) => update('plusOne', e.target.checked)} className="rounded w-5 h-5" />
             Plus One
           </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.needsHotel || false} onChange={(e) => update('needsHotel', e.target.checked)} className="rounded" />
+          <label className="flex items-center gap-2 text-sm cursor-pointer py-1">
+            <input type="checkbox" checked={form.needsHotel || false} onChange={(e) => update('needsHotel', e.target.checked)} className="rounded w-5 h-5" />
             Needs Hotel
           </label>
         </div>

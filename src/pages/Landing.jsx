@@ -8,14 +8,14 @@ export default function Landing() {
   return (
     <div className="min-h-screen font-body">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-5 max-w-7xl mx-auto">
+      <header className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 max-w-7xl mx-auto">
         <div className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-wine-700 to-wine-900 text-white font-display font-bold text-sm shadow-sm">P</div>
-          <span className="text-xl font-display font-bold text-gray-900 tracking-tight">{APP_NAME}</span>
+          <span className="text-lg sm:text-xl font-display font-bold text-gray-900 tracking-tight">{APP_NAME}</span>
         </div>
-        <div className="flex items-center gap-3">
-          <Link to="/login"><Button variant="ghost" className="link-flourish" tabIndex={-1}>Sign in</Button></Link>
-          <Link to="/register"><Button tabIndex={-1}>Start Planning</Button></Link>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link to="/login"><Button variant="ghost" className="link-flourish text-sm" tabIndex={-1}>Sign in</Button></Link>
+          <Link to="/register"><Button className="text-sm" tabIndex={-1}>Start Planning</Button></Link>
         </div>
       </header>
 
@@ -26,7 +26,7 @@ export default function Landing() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-gradient-to-b from-wine-50/80 via-phera-50/40 to-transparent blur-3xl"></div>
         </div>
         <p className="text-sm font-medium text-wine-600 tracking-wide uppercase mb-4">For weddings with 200, 500, or 1000+ guests</p>
-        <h1 className="text-5xl md:text-6xl font-display font-bold text-gray-900 leading-[1.1] mb-6">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-display font-bold text-gray-900 leading-[1.1] mb-6">
           The only planner built for<br />
           <span className="text-wine-700">Indian weddings</span>
         </h1>
@@ -46,7 +46,7 @@ export default function Landing() {
 
       {/* Social proof bar */}
       <div className="border-y border-gray-200/60 bg-white/80 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-center gap-8 text-sm text-gray-500">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-center gap-4 sm:gap-8 flex-wrap text-sm text-gray-500">
           <span className="flex items-center gap-1.5"><Check size={14} className="text-green-600" /> Multi-event support</span>
           <span className="flex items-center gap-1.5"><Check size={14} className="text-green-600" /> Family-group RSVPs</span>
           <span className="flex items-center gap-1.5"><Check size={14} className="text-green-600" /> Drag & drop seating</span>

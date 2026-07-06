@@ -56,26 +56,34 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
   }, {});
 
   const handleGripMouseDown = useCallback((e) => {
+    // Handle both mouse and touch
+    const isTouch = e.type === 'touchstart';
+    if (isTouch) e.preventDefault();
     e.stopPropagation();
-    const startPos = { x: e.clientX, y: e.clientY };
+    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+    const startPos = { x: clientX, y: clientY };
     let moved = false;
 
     const handleMove = (me) => {
-      const dx = me.clientX - startPos.x;
-      const dy = me.clientY - startPos.y;
-      if (!moved && Math.abs(dx) < 4 && Math.abs(dy) < 4) return; // threshold before dragging
+      const cx = me.touches ? me.touches[0].clientX : me.clientX;
+      const cy = me.touches ? me.touches[0].clientY : me.clientY;
+      const dx = cx - startPos.x;
+      const dy = cy - startPos.y;
+      if (!moved && Math.abs(dx) < 4 && Math.abs(dy) < 4) return;
       moved = true;
       const prevX = dragStart.current?.x || startPos.x;
       const prevY = dragStart.current?.y || startPos.y;
-      dragStart.current = { x: me.clientX, y: me.clientY };
-      onDrag(me.clientX - prevX, me.clientY - prevY);
+      dragStart.current = { x: cx, y: cy };
+      onDrag(cx - prevX, cy - prevY);
     };
 
     const handleUp = (ue) => {
       dragStart.current = null;
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('mouseup', handleUp);
-      // If we moved, suppress the click that follows
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('touchend', handleUp);
       if (moved) {
         const suppress = (ce) => { ce.stopPropagation(); ce.preventDefault(); };
         ue.target.addEventListener('click', suppress, { once: true, capture: true });
@@ -85,6 +93,8 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
     dragStart.current = startPos;
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', handleUp);
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleUp);
   }, [onDrag]);
 
   const startEdit = () => {
@@ -192,6 +202,7 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
           ${isOver ? 'border-wine-600 bg-wine-50 shadow-lg ring-2 ring-wine-300' : isOverCapacity ? 'border-red-400 bg-red-50' : hasWarnings ? 'border-amber-400 bg-amber-50 ring-1 ring-amber-200' : showGuestPanel ? 'border-wine-400 bg-wine-50/50 ring-1 ring-wine-200' : 'border-gray-300 bg-white hover:border-gray-400'}
         `}
         onMouseDown={handleGripMouseDown}
+        onTouchStart={handleGripMouseDown}
         onClick={handleTableClick}
         onDoubleClick={(e) => { e.stopPropagation(); startEdit(); }}
       >
@@ -381,6 +392,7 @@ export default function TableComponent({ table, guests, warnings = [], onUpdate,
       <div className="absolute left-1/2 -translate-x-1/2 top-0 hidden group-hover:flex gap-1 bg-white rounded-lg shadow-md border px-1 py-0.5 z-10">
         <button
           onMouseDown={handleGripMouseDown}
+          onTouchStart={handleGripMouseDown}
           className="p-1 rounded hover:bg-gray-100 cursor-move"
           title="Move table"
         >

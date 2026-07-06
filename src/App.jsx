@@ -22,6 +22,7 @@ import PhotoGroupManager from './pages/PhotoGroupManager';
 import BetsManager from './pages/BetsManager';
 import WeddingWebsite from './pages/WeddingWebsite';
 import PrintExport from './pages/PrintExport';
+import SeedData from './pages/SeedData';
 import {
   PublicPhotoGroupQueue,
   PhotoGroupDisplayView,
@@ -69,6 +70,7 @@ export default function App() {
             <Route path="/bets" element={<BetsManager />} />
             <Route path="/website" element={<WeddingWebsite />} />
             <Route path="/print" element={<PrintExport />} />
+            <Route path="/seed" element={<SeedData />} />
           </Route>
 
           {/* Catch-all */}
