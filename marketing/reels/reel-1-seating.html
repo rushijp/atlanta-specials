@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reel 1 — Drag & Drop Seating</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1080px; height: 1920px;
+  background: linear-gradient(135deg, #1a0a0a 0%, #2d1015 50%, #1a0a0a 100%);
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap');
+
+/* Top text */
+.top-text {
+  position: absolute; top: 120px; left: 0; right: 0; text-align: center;
+  animation: fadeSlideDown 0.6s ease-out forwards;
+  opacity: 0;
+}
+.top-text h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 64px; color: #fff; margin-bottom: 16px;
+  text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+}
+.top-text p {
+  font-size: 28px; color: rgba(255,255,255,0.7); font-weight: 500;
+}
+
+/* Mock seating canvas */
+.canvas-area {
+  position: absolute; top: 380px; left: 60px; right: 60px; bottom: 280px;
+  background: rgba(255,255,255,0.03);
+  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 32px;
+  overflow: hidden;
+  animation: fadeIn 0.4s 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+/* Tables */
+.table {
+  position: absolute; width: 160px; height: 160px;
+  border-radius: 50%; border: 3px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(4px);
+}
+.table .label {
+  font-size: 18px; font-weight: 700; color: #fff;
+}
+.table .count {
+  font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 4px;
+}
+.table.t1 { top: 80px; left: 100px; }
+.table.t2 { top: 80px; left: 380px; }
+.table.t3 { top: 80px; left: 660px; }
+.table.t4 { top: 320px; left: 100px; }
+.table.t5 { top: 320px; left: 380px; }
+.table.t6 { top: 320px; left: 660px; }
+.table.t7 { top: 560px; left: 240px; }
+.table.t8 { top: 560px; left: 520px; }
+
+/* Guest chip */
+.guest {
+  position: absolute;
+  background: linear-gradient(135deg, #be123c, #9f1239);
+  color: #fff; font-size: 14px; font-weight: 600;
+  padding: 10px 18px; border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(190, 18, 60, 0.4);
+  white-space: nowrap;
+  animation: dragGuest 6s 1s ease-in-out infinite;
+  opacity: 0;
+}
+
+/* Drag animation path */
+@keyframes dragGuest {
+  0% { top: 900px; left: 60px; opacity: 1; transform: scale(1); }
+  5% { top: 880px; left: 60px; opacity: 1; transform: scale(1.1); }
+  40% { top: 420px; left: 430px; opacity: 1; transform: scale(1.05); }
+  45% { top: 420px; left: 430px; opacity: 1; transform: scale(1); }
+  50% { top: 420px; left: 430px; opacity: 0; transform: scale(0.8); }
+  100% { top: 420px; left: 430px; opacity: 0; transform: scale(0.8); }
+}
+
+/* Table highlight on receive */
+.table.t5 {
+  animation: receiveGuest 6s 1s ease-in-out infinite;
+}
+@keyframes receiveGuest {
+  0%, 39% { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); }
+  40%, 50% { border-color: #be123c; background: rgba(190, 18, 60, 0.15); box-shadow: 0 0 40px rgba(190, 18, 60, 0.3); }
+  55%, 100% { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); }
+}
+
+/* Second guest drag */
+.guest2 {
+  animation: dragGuest2 6s 3.5s ease-in-out infinite;
+  background: linear-gradient(135deg, #d97706, #b45309);
+  box-shadow: 0 8px 32px rgba(217, 119, 6, 0.4);
+}
+@keyframes dragGuest2 {
+  0% { top: 960px; left: 60px; opacity: 1; transform: scale(1); }
+  5% { top: 940px; left: 60px; opacity: 1; transform: scale(1.1); }
+  40% { top: 180px; left: 710px; opacity: 1; transform: scale(1.05); }
+  45% { top: 180px; left: 710px; opacity: 1; transform: scale(1); }
+  50% { top: 180px; left: 710px; opacity: 0; transform: scale(0.8); }
+  100% { top: 180px; left: 710px; opacity: 0; transform: scale(0.8); }
+}
+
+/* Bottom CTA */
+.bottom-cta {
+  position: absolute; bottom: 100px; left: 0; right: 0; text-align: center;
+  animation: fadeSlideUp 0.6s 0.8s ease-out forwards;
+  opacity: 0;
+}
+.bottom-cta .brand {
+  font-size: 48px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, #fff 0%, #fda4af 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 12px;
+}
+.bottom-cta p {
+  font-size: 24px; color: rgba(255,255,255,0.6);
+}
+
+/* Keyframes */
+@keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Ambient glow */
+.glow {
+  position: absolute; width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(190, 18, 60, 0.15), transparent 70%);
+  animation: pulse 4s ease-in-out infinite;
+}
+.glow.g1 { top: 300px; left: -100px; }
+.glow.g2 { bottom: 200px; right: -100px; animation-delay: 2s; }
+@keyframes pulse { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
+</style>
+</head>
+<body>
+  <div class="glow g1"></div>
+  <div class="glow g2"></div>
+
+  <div class="top-text">
+    <h1>Drag. Drop. Done.</h1>
+    <p>Seat 300+ guests in minutes</p>
+  </div>
+
+  <div class="canvas-area">
+    <div class="table t1"><span class="label">Table 1</span><span class="count">8/10</span></div>
+    <div class="table t2"><span class="label">Table 2</span><span class="count">10/10</span></div>
+    <div class="table t3"><span class="label">Table 3</span><span class="count">7/10</span></div>
+    <div class="table t4"><span class="label">Table 4</span><span class="count">9/10</span></div>
+    <div class="table t5"><span class="label">Table 5</span><span class="count">6/10</span></div>
+    <div class="table t6"><span class="label">Table 6</span><span class="count">10/10</span></div>
+    <div class="table t7"><span class="label">Table 7</span><span class="count">5/10</span></div>
+    <div class="table t8"><span class="label">Table 8</span><span class="count">8/10</span></div>
+
+    <div class="guest">Patel Family (4)</div>
+    <div class="guest guest2">Aisha Khan +1</div>
+  </div>
+
+  <div class="bottom-cta">
+    <div class="brand">Phera</div>
+    <p>Built for Indian weddings</p>
+  </div>
+</body>
+</html>

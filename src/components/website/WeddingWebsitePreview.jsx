@@ -152,7 +152,7 @@ export default function WeddingWebsitePreview({
               <Heart size={14} />
               Wedding Celebration
             </div>
-            <h1 className="text-5xl font-semibold leading-none md:text-7xl">
+            <h1 className="text-5xl font-semibold leading-none md:text-7xl" style={{ fontFamily: '"Playfair Display", Georgia, serif' }}>
               {coupleName}
             </h1>
             {heroDate && (

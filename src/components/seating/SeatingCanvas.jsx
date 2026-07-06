@@ -320,10 +320,113 @@ export default function SeatingCanvas() {
 
   if (!activeWedding) return null;
 
-   return (
+  // Mobile: view-only optimized layout
+  const mobileViewContent = (
+    <div className="md:hidden flex flex-col h-[calc(100vh-8rem)]">
+      {/* Mobile header */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 bg-white">
+        <div className="flex items-center gap-2">
+          <select
+            value={selectedEventId || ''}
+            onChange={(e) => setSelectedEventId(e.target.value)}
+            className="rounded-lg border border-gray-300 px-2 py-1.5 text-xs"
+          >
+            {events.map((evt) => <option key={evt.id} value={evt.id}>{evt.name}</option>)}
+          </select>
+          <span className="text-xs text-gray-500">{tables.length} tables • {assignedGuestIds.size}/{guests.length} seated</span>
+        </div>
+        {hasChanges && (
+          <Button size="sm" onClick={handleSave}><Save size={12} /> Save</Button>
+        )}
+      </div>
+
+      {/* Info banner */}
+      <div className="px-3 py-2 bg-amber-50 border-b border-amber-200 text-xs text-amber-800 flex items-center gap-2">
+        <span>👁️</span>
+        <span>View-only on mobile. Use desktop to drag tables and assign guests.</span>
+      </div>
+
+      {/* Zoomed-out canvas — read-only, pinch-friendly */}
+      <div className="flex-1 overflow-auto bg-gray-50 relative">
+        {events.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+            <p>Add events first to start seating</p>
+          </div>
+        ) : tables.length === 0 && zones.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-gray-400 text-sm text-center px-6">
+            <p>No tables yet. Open on desktop to set up your venue layout.</p>
+          </div>
+        ) : (
+          <div
+            style={{
+              transform: 'scale(0.35)',
+              transformOrigin: '0 0',
+              width: '3000px',
+              height: '2000px',
+              position: 'relative',
+              minWidth: '3000px',
+              minHeight: '2000px',
+              pointerEvents: 'none',
+            }}
+          >
+            {venueImage && (
+              <img src={venueImage} alt="Venue layout"
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', opacity: venueOpacity, pointerEvents: 'none', userSelect: 'none' }}
+                draggable={false} />
+            )}
+            {zones.map((zone) => (
+              <div key={zone.id} style={{
+                position: 'absolute',
+                left: zone.x || 400,
+                top: zone.y || 200,
+                width: zone.width,
+                height: zone.height,
+                backgroundColor: zone.color || '#f3f4f6',
+                borderRadius: '12px',
+                border: '2px dashed #d1d5db',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column',
+              }}>
+                <span className="text-2xl">{(ZONE_PRESETS.find(z => z.type === zone.type)?.icon) || '📐'}</span>
+                <span className="text-xs font-semibold text-gray-600">{zone.label}</span>
+              </div>
+            ))}
+            {tables.map((table) => (
+              <TableComponent
+                key={table.id}
+                table={table}
+                guests={guests}
+                warnings={ruleEvaluation.tableWarnings[table.id] || []}
+                onUpdate={() => {}}
+                onRemove={() => {}}
+                onDrag={() => {}}
+                onRemoveGuest={() => {}}
+                zoom={0.35}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Mobile summary footer */}
+      <div className="px-3 py-2 border-t border-gray-200 bg-white flex items-center justify-between text-xs text-gray-600">
+        <span>{unassignedGuests.length} unassigned</span>
+        {ruleEvaluation.violationCount > 0 && (
+          <span className="text-amber-700">⚠️ {ruleEvaluation.violationCount} violations</span>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {mobileViewContent}
+      <div className="hidden md:block">
     <DndContext sensors={sensors} collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex flex-col md:flex-row h-[calc(100vh-8rem)] gap-2 md:gap-4">
-        {/* Sidebar — unassigned guests (hidden on mobile, toggled via button) */}
+      <div className="flex h-[calc(100vh-8rem)] gap-4">
+        {/* Sidebar — unassigned guests */}
         <GuestSidebar
           guests={unassignedGuests}
           allGuests={guests}
@@ -338,23 +441,18 @@ export default function SeatingCanvas() {
 
         {/* Main canvas */}
         <div className="flex-1 flex flex-col min-h-0">
-          {/* Toolbar — responsive: scrollable on mobile */}
-          <div className="flex items-center gap-2 mb-2 md:mb-3 overflow-x-auto pb-2 md:pb-0 md:flex-wrap scrollbar-thin">
+          {/* Toolbar */}
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
             {/* Event selector */}
             <select
               value={selectedEventId || ''}
               onChange={(e) => setSelectedEventId(e.target.value)}
-              className="rounded-lg border border-gray-300 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm flex-shrink-0"
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
             >
               {events.map((evt) => <option key={evt.id} value={evt.id}>{evt.name}</option>)}
             </select>
 
-            {/* Mobile: show unassigned count as toggle hint */}
-            <span className="md:hidden text-xs text-gray-500 flex-shrink-0 bg-gray-100 rounded-full px-2 py-1">
-              {unassignedGuests.length} unassigned
-            </span>
-
-            <div className="flex-1 hidden md:block" />
+            <div className="flex-1" />
 
             <Button variant="outline" size="sm" onClick={() => setZoom((z) => Math.min(z + 0.1, 2))}>
               <ZoomIn size={14} />
@@ -712,6 +810,8 @@ export default function SeatingCanvas() {
         </div>
       </Modal>
     </DndContext>
+      </div>
+    </>
   );
 }
 

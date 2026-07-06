@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reel 3 — Excel Chaos vs Phera</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1080px; height: 1920px;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden; position: relative;
+}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap');
+
+/* Split screen */
+.split { position: absolute; inset: 0; }
+
+/* LEFT: Excel chaos (shown first) */
+.chaos-side {
+  position: absolute; inset: 0;
+  background: #f3f4f6;
+  animation: chaosPhase 7s ease-in-out infinite;
+}
+@keyframes chaosPhase {
+  0%, 45% { opacity: 1; }
+  50%, 100% { opacity: 0; pointer-events: none; }
+}
+
+.chaos-header {
+  background: #217346; padding: 20px 30px;
+  display: flex; align-items: center; gap: 12px;
+}
+.chaos-header span { color: #fff; font-size: 18px; font-weight: 600; }
+
+.chaos-grid {
+  padding: 10px;
+  font-size: 11px;
+}
+.chaos-grid table { width: 100%; border-collapse: collapse; }
+.chaos-grid th { background: #e5e7eb; padding: 8px 6px; text-align: left; font-size: 10px; color: #374151; border: 1px solid #d1d5db; }
+.chaos-grid td { padding: 7px 6px; border: 1px solid #d1d5db; font-size: 11px; color: #1f2937; white-space: nowrap; overflow: hidden; }
+.chaos-grid tr:nth-child(even) td { background: #f9fafb; }
+.chaos-grid .err { background: #fecaca !important; color: #991b1b; }
+.chaos-grid .dup { background: #fef3c7 !important; }
+
+/* Scrolling effect */
+.chaos-scroll {
+  animation: scrollDown 7s linear infinite;
+  transform: translateY(0);
+}
+@keyframes scrollDown {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-600px); }
+  45%, 100% { transform: translateY(-600px); }
+}
+
+/* Pain text overlay */
+.pain-text {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  text-align: center; z-index: 10;
+  animation: painIn 7s ease-in-out infinite;
+  opacity: 0;
+}
+@keyframes painIn {
+  0%, 25% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  30%, 44% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  45%, 100% { opacity: 0; }
+}
+.pain-text h2 {
+  font-size: 72px; font-weight: 800; color: #dc2626;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  background: #fff; padding: 20px 40px; border-radius: 20px;
+}
+
+/* RIGHT: Phera clean (shown after) */
+.phera-side {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, #1a0a0a, #2d1015);
+  animation: pheraPhase 7s ease-in-out infinite;
+  opacity: 0;
+}
+@keyframes pheraPhase {
+  0%, 48% { opacity: 0; }
+  52%, 95% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.phera-content {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  text-align: center; width: 80%;
+}
+.phera-content .brand {
+  font-size: 96px; font-weight: 800;
+  background: linear-gradient(135deg, #fff, #fda4af);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 40px;
+}
+.phera-content h2 {
+  font-size: 52px; font-weight: 700; color: #fff; line-height: 1.3;
+  margin-bottom: 30px;
+}
+.phera-content .features {
+  display: flex; flex-direction: column; gap: 20px; align-items: center;
+}
+.phera-content .feat {
+  display: flex; align-items: center; gap: 16px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; padding: 18px 28px;
+  font-size: 24px; color: rgba(255,255,255,0.9);
+  animation: featIn 7s ease-out infinite;
+  opacity: 0;
+}
+.feat:nth-child(1) { animation-delay: 0s; }
+.feat:nth-child(2) { animation-delay: 0.2s; }
+.feat:nth-child(3) { animation-delay: 0.4s; }
+.feat:nth-child(4) { animation-delay: 0.6s; }
+
+@keyframes featIn {
+  0%, 52% { opacity: 0; transform: translateX(-20px); }
+  57% { opacity: 1; transform: translateX(0); }
+  90% { opacity: 1; }
+  95%, 100% { opacity: 0; }
+}
+
+.feat .icon { font-size: 28px; }
+.feat .check { color: #22c55e; font-weight: 700; margin-left: auto; }
+
+.bottom-tag {
+  position: absolute; bottom: 100px; left: 0; right: 0; text-align: center;
+  font-size: 28px; color: rgba(255,255,255,0.5);
+  animation: pheraPhase 7s ease-in-out infinite; opacity: 0;
+}
+</style>
+</head>
+<body>
+  <!-- EXCEL CHAOS PHASE -->
+  <div class="chaos-side">
+    <div class="chaos-header">
+      <span>📊 Wedding_Guest_List_FINAL_v7_UPDATED.xlsx</span>
+    </div>
+    <div class="chaos-grid">
+      <div class="chaos-scroll">
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Side</th><th>RSVP Mehndi</th><th>RSVP Sangeet</th><th>RSVP Wedding</th><th>Table</th><th>Dietary</th><th>Hotel?</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Rajesh Shah</td><td>Bride</td><td>Yes</td><td>Yes</td><td>Yes</td><td>1</td><td>Jain</td><td>No</td></tr>
+            <tr><td>Meena Shah</td><td>Bride</td><td>Yes</td><td>Yes</td><td>Yes</td><td>1</td><td>Jain</td><td>No</td></tr>
+            <tr><td class="err">Suresh Mehta</td><td>Bride</td><td class="err">???</td><td>Yes</td><td class="err">Maybe</td><td class="err"></td><td>Veg</td><td>Yes</td></tr>
+            <tr><td>Usha Mehta</td><td>Bride</td><td>Yes</td><td>Yes</td><td>Yes</td><td class="err">TBD</td><td>Jain</td><td>Yes</td></tr>
+            <tr class="dup"><td class="dup">Rohan Mehta</td><td>Bride</td><td>No</td><td>Yes</td><td>Yes</td><td>3</td><td>Non-veg</td><td>Yes</td></tr>
+            <tr class="dup"><td class="dup">Rohan Mehta</td><td class="err">Groom??</td><td>Yes</td><td></td><td>Yes</td><td class="err">3 or 7?</td><td>NV</td><td></td></tr>
+            <tr><td>Bharat Shah</td><td>Bride</td><td>Yes</td><td>Yes</td><td>Yes</td><td>2</td><td>Veg</td><td>Yes</td></tr>
+            <tr><td>Hema Shah</td><td>Bride</td><td>Yes</td><td>Yes</td><td>Yes</td><td>2</td><td>Veg</td><td>Yes</td></tr>
+            <tr><td class="err">Nikhil Shah + Tanya??</td><td>Bride</td><td class="err">+1?</td><td>Yes</td><td>Yes</td><td class="err"></td><td></td><td>Yes</td></tr>
+            <tr><td>Vikram Patel</td><td>Groom</td><td>Yes</td><td>Yes</td><td>Yes</td><td>5</td><td>Veg</td><td>No</td></tr>
+            <tr><td>Sonal Patel</td><td>Groom</td><td>Yes</td><td>Yes</td><td>Yes</td><td>5</td><td>Veg</td><td>No</td></tr>
+            <tr><td class="err">Kevin O'Brien</td><td>Groom</td><td class="err">N/A</td><td>Yes</td><td>Yes</td><td class="err">??</td><td class="err">non veg/gluten free??</td><td>Yes</td></tr>
+            <tr><td>Sahil + Amanda</td><td>Groom</td><td>Yes</td><td>Yes</td><td>Yes</td><td>6</td><td>NV</td><td>Yes</td></tr>
+            <tr><td class="err">DELETE THIS ROW</td><td class="err">-</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>Ashok Bhavsar</td><td>Groom</td><td>Yes</td><td>Yes</td><td>Yes</td><td class="err">needs wheelchair table</td><td>Veg</td><td>Yes</td></tr>
+            <tr><td>Manjula Bhavsar</td><td>Groom</td><td>Yes</td><td>Yes</td><td>Yes</td><td>7</td><td>Veg</td><td>Yes</td></tr>
+            <tr><td class="dup">Chris Anderson + Katie</td><td>Groom</td><td></td><td>Yes</td><td>Yes</td><td></td><td>NV</td><td>Yes</td></tr>
+            <tr><td>Darshan Rana</td><td>Groom</td><td>No</td><td>Yes</td><td>Yes</td><td>6</td><td>Veg</td><td>Yes</td></tr>
+            <tr><td class="err">MOM ADD 5 MORE PEOPLE FROM TEMPLE</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>Jatin Bhakta</td><td>Groom</td><td>Yes</td><td>Yes</td><td>Yes</td><td>8</td><td>Veg</td><td>No</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="pain-text">
+      <h2>Sound familiar? 😅</h2>
+    </div>
+  </div>
+
+  <!-- PHERA CLEAN PHASE -->
+  <div class="phera-side">
+    <div class="phera-content">
+      <div class="brand">Phera</div>
+      <h2>Replace the chaos.</h2>
+      <div class="features">
+        <div class="feat"><span class="icon">👨‍👩‍👧‍👦</span> Family-grouped RSVPs <span class="check">✓</span></div>
+        <div class="feat"><span class="icon">🪑</span> Drag & drop seating <span class="check">✓</span></div>
+        <div class="feat"><span class="icon">📅</span> Per-event invite lists <span class="check">✓</span></div>
+        <div class="feat"><span class="icon">🖨️</span> Auto place cards <span class="check">✓</span></div>
+      </div>
+    </div>
+    <div class="bottom-tag">Free for up to 100 guests</div>
+  </div>
+</body>
+</html>

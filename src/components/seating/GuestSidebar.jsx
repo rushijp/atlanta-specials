@@ -33,7 +33,7 @@ export default function GuestSidebar({
   const { setNodeRef: setUnassignedRef } = useDroppable({ id: 'unassigned-zone' });
 
   return (
-    <div className="w-72 flex-shrink-0 flex flex-col border border-gray-200 rounded-xl bg-white overflow-hidden hidden md:flex">
+    <div className="w-72 flex-shrink-0 flex flex-col border border-gray-200 rounded-xl bg-white overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-100">
         <div className="flex items-center justify-between mb-2">
